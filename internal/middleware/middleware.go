@@ -39,6 +39,7 @@ func (um *UserMiddleware) Authenticate(next http.Handler) http.Handler {
 				util.WriteJSON(w, http.StatusUnauthorized, util.Envelope{"error": "no token received"})
 				return
 			}
+
 			util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal service error"})
 			return
 		}

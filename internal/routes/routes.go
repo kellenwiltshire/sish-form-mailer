@@ -1,15 +1,37 @@
 package routes
 
 import (
+	"log"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+
 	"github.com/kellenwiltshire/formality/internal/app"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+func createViteProxy(target string) http.Handler {
+	url, err := url.Parse(target)
+	if err != nil {
+		log.Fatal(err)
+	}
+	proxy := httputil.NewSingleHostReverseProxy(url)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Update the request to point to the Vite server
+		r.Host = url.Host
+		r.URL.Scheme = url.Scheme
+		r.URL.Host = url.Host
+		proxy.ServeHTTP(w, r)
+	})
+}
+
 func Routes(app *app.Application) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+
+	viteProxy := createViteProxy("http://172.26.0.4:5173")
 
 	r.Group(func(r chi.Router) {
 		r.Use(app.Middleware.Authenticate)
@@ -55,6 +77,8 @@ func Routes(app *app.Application) *chi.Mux {
 
 	// Login
 	r.Post("/api/auth/login", app.TokenHandler.HandleCreateToken)
+
+	r.Handle("/*", viteProxy)
 
 	return r
 }

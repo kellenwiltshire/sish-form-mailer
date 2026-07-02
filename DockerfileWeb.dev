@@ -1,0 +1,18 @@
+FROM oven/bun:slim
+
+WORKDIR /app
+
+COPY client/package*.json ./client/
+
+WORKDIR /app/client
+
+RUN bun install
+
+# Copy the rest of the client application files
+COPY client/ ./
+
+# Expose Vite's default dev server port
+EXPOSE 5173
+
+# Run the development server
+CMD ["bun", "run", "dev"]
