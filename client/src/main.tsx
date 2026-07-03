@@ -5,6 +5,7 @@ import { createBrowserRouter } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import './main.css'
 import Dashboard from './components/Dashboard/Dashboard.tsx'
+import FormPage from './components/FormPage/FormPage.tsx'
 
 const router = createBrowserRouter([
 	{
@@ -14,6 +15,10 @@ const router = createBrowserRouter([
 	{
 		path: '/dashboard',
 		element: <Dashboard />,
+	},
+	{
+		path: 'form/:id',
+		element: <FormPage />,
 	},
 ])
 

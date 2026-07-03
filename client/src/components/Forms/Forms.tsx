@@ -76,7 +76,7 @@ const Forms = () => {
 						<div className='min-w-0 flex-auto'>
 							<div className='flex items-center gap-x-3'>
 								<h2 className='min-w-0 text-sm/6 font-semibold text-gray-900'>
-									<a href={form.id} className='flex gap-x-2'>
+									<a href={`/form/${form.id}`} className='flex gap-x-2'>
 										<span className='truncate'>
 											{form.name.toLocaleUpperCase()}
 										</span>

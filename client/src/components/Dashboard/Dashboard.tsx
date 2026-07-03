@@ -1,119 +1,25 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
 	Dialog,
 	DialogBackdrop,
 	DialogPanel,
-	Menu,
-	MenuButton,
-	MenuItem,
-	MenuItems,
 	TransitionChild,
 } from '@headlessui/react'
 import {
-	ChartBarSquareIcon,
 	Cog6ToothIcon,
-	FolderIcon,
 	GlobeAltIcon,
 	ServerIcon,
 	SignalIcon,
 	XMarkIcon,
 } from '@heroicons/react/24/outline'
-import {
-	Bars3Icon,
-	ChevronRightIcon,
-	ChevronUpDownIcon,
-	MagnifyingGlassIcon,
-} from '@heroicons/react/20/solid'
+import { Bars3Icon } from '@heroicons/react/20/solid'
 import Forms from '../Forms/Forms'
 
 const navigation = [
-	{ name: 'Form', href: '#', icon: ServerIcon, current: true },
-	{ name: 'Email Settings', href: '#', icon: SignalIcon, current: false },
-	{ name: 'Admin', href: '#', icon: GlobeAltIcon, current: false },
-	{ name: 'Settings', href: '#', icon: Cog6ToothIcon, current: false },
-]
-
-const deployments = [
-	{
-		id: 1,
-		href: '#',
-		projectName: 'ios-app',
-		teamName: 'Planetaria',
-		status: 'offline',
-		statusText: 'Initiated 1m 32s ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 2,
-		href: '#',
-		projectName: 'mobile-api',
-		teamName: 'Planetaria',
-		status: 'online',
-		statusText: 'Deployed 3m ago',
-		description: 'Deploys from GitHub',
-		environment: 'Production',
-	},
-	{
-		id: 3,
-		href: '#',
-		projectName: 'tailwindcss.com',
-		teamName: 'Tailwind Labs',
-		status: 'offline',
-		statusText: 'Deployed 3h ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 4,
-		href: '#',
-		projectName: 'company-website',
-		teamName: 'Tailwind Labs',
-		status: 'online',
-		statusText: 'Deployed 1d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 5,
-		href: '#',
-		projectName: 'relay-service',
-		teamName: 'Protocol',
-		status: 'online',
-		statusText: 'Deployed 1d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Production',
-	},
-	{
-		id: 6,
-		href: '#',
-		projectName: 'android-app',
-		teamName: 'Planetaria',
-		status: 'online',
-		statusText: 'Deployed 5d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 7,
-		href: '#',
-		projectName: 'api.protocol.chat',
-		teamName: 'Protocol',
-		status: 'error',
-		statusText: 'Failed to deploy 6d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 8,
-		href: '#',
-		projectName: 'planetaria.tech',
-		teamName: 'Planetaria',
-		status: 'online',
-		statusText: 'Deployed 6d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
+	{ name: 'Form', id: 'form', icon: ServerIcon },
+	{ name: 'Email Settings', id: 'email', icon: SignalIcon },
+	{ name: 'Admin', id: 'admin', icon: GlobeAltIcon },
+	{ name: 'Settings', id: 'settings', icon: Cog6ToothIcon },
 ]
 
 export function classNames(...classes) {
@@ -122,6 +28,29 @@ export function classNames(...classes) {
 
 const Dashboard = () => {
 	const [sidebarOpen, setSidebarOpen] = useState(false)
+
+	const [currentView, setCurrentView] = useState('form')
+
+	useEffect(() => {
+		const view = window.location.search.split('?view=')[1]
+
+		setCurrentView(view)
+	}, [])
+
+	const getView = () => {
+		switch (currentView) {
+			case 'form':
+				return <Forms />
+			case 'email':
+				return <div>email</div>
+			case 'admin':
+				return <div>admin</div>
+			case 'settings':
+				return <div>settings</div>
+			default:
+				return <Forms />
+		}
+	}
 
 	return (
 		<>
@@ -173,9 +102,9 @@ const Dashboard = () => {
 												{navigation.map((item) => (
 													<li key={item.name}>
 														<a
-															href={item.href}
+															href={item.id}
 															className={classNames(
-																item.current
+																item.id === currentView
 																	? 'bg-gray-100 text-indigo-600'
 																	: 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600',
 																'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
@@ -184,7 +113,7 @@ const Dashboard = () => {
 															<item.icon
 																aria-hidden='true'
 																className={classNames(
-																	item.current
+																	item.id === currentView
 																		? 'text-indigo-600'
 																		: 'text-gray-400 group-hover:text-indigo-600',
 																	'size-6 shrink-0',
@@ -220,26 +149,28 @@ const Dashboard = () => {
 									<ul role='list' className='-mx-2 space-y-1'>
 										{navigation.map((item) => (
 											<li key={item.name}>
-												<a
-													href={item.href}
+												<button
+													onClick={() =>
+														(window.location.search = `view=${item.id}`)
+													}
 													className={classNames(
-														item.current
+														item.id === currentView
 															? 'bg-gray-100 text-indigo-600'
 															: 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600',
-														'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
+														'group flex w-full cursor-pointer gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 													)}
 												>
 													<item.icon
 														aria-hidden='true'
 														className={classNames(
-															item.current
+															item.id === currentView
 																? 'text-indigo-600'
 																: 'text-gray-400 group-hover:text-indigo-600',
 															'size-6 shrink-0',
 														)}
 													/>
 													{item.name}
-												</a>
+												</button>
 											</li>
 										))}
 									</ul>
@@ -261,7 +192,7 @@ const Dashboard = () => {
 							<Bars3Icon aria-hidden='true' className='size-5' />
 						</button>
 					</div>
-					<Forms />
+					{getView()}
 				</div>
 			</div>
 		</>
