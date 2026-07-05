@@ -6,6 +6,9 @@ import { RouterProvider } from 'react-router/dom'
 import './main.css'
 import Dashboard from './components/Dashboard/Dashboard.tsx'
 import { ToastContainer } from 'react-toastify'
+import { Provider } from 'react-redux'
+import { store } from './redux/store.ts'
+import ModalProvider from './providers/ModalProvider.tsx'
 
 const router = createBrowserRouter([
 	{
@@ -20,19 +23,25 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
-		<RouterProvider router={router} />
-		<ToastContainer
-			position='bottom-center'
-			autoClose={5000}
-			limit={3}
-			hideProgressBar
-			newestOnTop={false}
-			closeOnClick
-			rtl={false}
-			pauseOnFocusLoss={false}
-			draggable
-			pauseOnHover={false}
-			theme='light'
-		/>
+		<Provider store={store}>
+			<ModalProvider>
+				<>
+					<RouterProvider router={router} />
+					<ToastContainer
+						position='bottom-center'
+						autoClose={5000}
+						limit={3}
+						hideProgressBar
+						newestOnTop={false}
+						closeOnClick
+						rtl={false}
+						pauseOnFocusLoss={false}
+						draggable
+						pauseOnHover={false}
+						theme='light'
+					/>
+				</>
+			</ModalProvider>
+		</Provider>
 	</StrictMode>,
 )

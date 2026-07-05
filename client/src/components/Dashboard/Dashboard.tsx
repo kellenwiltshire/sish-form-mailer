@@ -18,18 +18,39 @@ import FormsList from './Sections/FormPage/FormsList'
 import EmailPage from './Sections/Email/EmailPage'
 import { classNames } from '@/util/Classnames/Classnames'
 import AdminPage from './Sections/Admin/AdminPage'
+import useSWR from 'swr'
+import { fetcher } from '@/util/SWR/fetch'
+import { useAppDispatch } from '@/redux/hooks'
+import { updateUser } from '@/redux/userSlice/userSlice'
+import type { User } from '@/types/User/User'
+import SettingsPage from './Sections/Settings/SettingsPage'
+
+type GetUsersResponse = {
+	user: User
+}
 
 const navigation = [
-	{ name: 'Form', id: 'form', icon: ServerIcon },
-	{ name: 'Email Settings', id: 'email', icon: SignalIcon },
-	{ name: 'Admin', id: 'admin', icon: GlobeAltIcon },
-	{ name: 'Settings', id: 'settings', icon: Cog6ToothIcon },
+	{ name: 'Form', id: 'form', icon: ServerIcon, access: 'user' },
+	{ name: 'Email Settings', id: 'email', icon: SignalIcon, access: 'user' },
+	{ name: 'Admin', id: 'admin', icon: GlobeAltIcon, access: 'admin' },
+	{ name: 'Settings', id: 'settings', icon: Cog6ToothIcon, access: 'user' },
 ]
 
 const Dashboard = () => {
+	const dispatch = useAppDispatch()
 	const [sidebarOpen, setSidebarOpen] = useState(false)
 
 	const [currentView, setCurrentView] = useState('form')
+
+	const { data, error } = useSWR<GetUsersResponse, Error>('/api/user', fetcher)
+
+	if (error) {
+		console.log(error)
+	}
+
+	if (data) {
+		dispatch(updateUser(data.user))
+	}
 
 	const getView = () => {
 		switch (currentView) {
@@ -40,7 +61,7 @@ const Dashboard = () => {
 			case 'admin':
 				return <AdminPage />
 			case 'settings':
-				return <div>settings</div>
+				return <SettingsPage />
 			default:
 				return <Forms />
 		}
@@ -93,30 +114,38 @@ const Dashboard = () => {
 									<ul role='list' className='flex flex-1 flex-col gap-y-7'>
 										<li>
 											<ul role='list' className='-mx-2 space-y-1'>
-												{navigation.map((item) => (
-													<li key={item.name}>
-														<a
-															href={item.id}
-															className={classNames(
-																item.id === currentView
-																	? 'bg-gray-100 text-indigo-600'
-																	: 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600',
-																'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
-															)}
-														>
-															<item.icon
-																aria-hidden='true'
+												{navigation.map((item) => {
+													if (
+														item.access === 'admin' &&
+														data?.user.role !== 'admin'
+													) {
+														return null
+													}
+													return (
+														<li key={item.name}>
+															<a
+																href={item.id}
 																className={classNames(
 																	item.id === currentView
-																		? 'text-indigo-600'
-																		: 'text-gray-400 group-hover:text-indigo-600',
-																	'size-6 shrink-0',
+																		? 'bg-gray-100 text-indigo-600'
+																		: 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600',
+																	'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 																)}
-															/>
-															{item.name}
-														</a>
-													</li>
-												))}
+															>
+																<item.icon
+																	aria-hidden='true'
+																	className={classNames(
+																		item.id === currentView
+																			? 'text-indigo-600'
+																			: 'text-gray-400 group-hover:text-indigo-600',
+																		'size-6 shrink-0',
+																	)}
+																/>
+																{item.name}
+															</a>
+														</li>
+													)
+												})}
 											</ul>
 										</li>
 									</ul>
@@ -184,7 +213,9 @@ const Dashboard = () => {
 							<Bars3Icon aria-hidden='true' className='size-5' />
 						</button>
 					</div>
-					<main>{getView()}</main>
+					<main className='flex min-h-screen items-center justify-center'>
+						{getView()}
+					</main>
 				</div>
 			</div>
 		</>
