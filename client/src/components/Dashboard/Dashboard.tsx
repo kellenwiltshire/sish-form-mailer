@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
 	Dialog,
 	DialogBackdrop,
@@ -13,7 +13,11 @@ import {
 	XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { Bars3Icon } from '@heroicons/react/20/solid'
-import Forms from '../Forms/Forms'
+import Forms from './Sections/FormPage/FormsList'
+import FormsList from './Sections/FormPage/FormsList'
+import EmailPage from './Sections/Email/EmailPage'
+import { classNames } from '@/util/Classnames/Classnames'
+import AdminPage from './Sections/Admin/AdminPage'
 
 const navigation = [
 	{ name: 'Form', id: 'form', icon: ServerIcon },
@@ -22,29 +26,19 @@ const navigation = [
 	{ name: 'Settings', id: 'settings', icon: Cog6ToothIcon },
 ]
 
-export function classNames(...classes) {
-	return classes.filter(Boolean).join(' ')
-}
-
 const Dashboard = () => {
 	const [sidebarOpen, setSidebarOpen] = useState(false)
 
 	const [currentView, setCurrentView] = useState('form')
 
-	useEffect(() => {
-		const view = window.location.search.split('?view=')[1]
-
-		setCurrentView(view)
-	}, [])
-
 	const getView = () => {
 		switch (currentView) {
 			case 'form':
-				return <Forms />
+				return <FormsList />
 			case 'email':
-				return <div>email</div>
+				return <EmailPage />
 			case 'admin':
-				return <div>admin</div>
+				return <AdminPage />
 			case 'settings':
 				return <div>settings</div>
 			default:
@@ -150,9 +144,7 @@ const Dashboard = () => {
 										{navigation.map((item) => (
 											<li key={item.name}>
 												<button
-													onClick={() =>
-														(window.location.search = `view=${item.id}`)
-													}
+													onClick={() => setCurrentView(item.id)}
 													className={classNames(
 														item.id === currentView
 															? 'bg-gray-100 text-indigo-600'
@@ -192,7 +184,7 @@ const Dashboard = () => {
 							<Bars3Icon aria-hidden='true' className='size-5' />
 						</button>
 					</div>
-					{getView()}
+					<main>{getView()}</main>
 				</div>
 			</div>
 		</>

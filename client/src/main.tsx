@@ -5,7 +5,7 @@ import { createBrowserRouter } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import './main.css'
 import Dashboard from './components/Dashboard/Dashboard.tsx'
-import FormPage from './components/FormPage/FormPage.tsx'
+import { ToastContainer } from 'react-toastify'
 
 const router = createBrowserRouter([
 	{
@@ -16,14 +16,23 @@ const router = createBrowserRouter([
 		path: '/dashboard',
 		element: <Dashboard />,
 	},
-	{
-		path: 'form/:id',
-		element: <FormPage />,
-	},
 ])
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<RouterProvider router={router} />
+		<ToastContainer
+			position='bottom-center'
+			autoClose={5000}
+			limit={3}
+			hideProgressBar
+			newestOnTop={false}
+			closeOnClick
+			rtl={false}
+			pauseOnFocusLoss={false}
+			draggable
+			pauseOnHover={false}
+			theme='light'
+		/>
 	</StrictMode>,
 )

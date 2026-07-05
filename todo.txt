@@ -6,3 +6,4 @@ Backend:
 Frontend:
 
 - Remember Me
+- pre-commit (lint, test, knip)

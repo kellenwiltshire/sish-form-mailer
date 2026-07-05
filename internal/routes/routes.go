@@ -31,7 +31,7 @@ func Routes(app *app.Application) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	viteProxy := createViteProxy("http://172.26.0.4:5173")
+	viteProxy := createViteProxy("http://web:5173")
 
 	r.Group(func(r chi.Router) {
 		r.Use(app.Middleware.Authenticate)

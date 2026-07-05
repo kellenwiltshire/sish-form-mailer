@@ -1,8 +1,7 @@
-import { useParams } from 'react-router'
+import type { Form } from '@/types/Form/Form'
+import type { Submission } from '@/types/Submission/Submission'
+import { fetcher } from '@/util/SWR/fetch'
 import useSWR from 'swr'
-import { fetcher } from '../../util/SWR/fetch'
-import type { Form } from '../../types/Form/Form'
-import type { Submission } from '../../types/Submission/Submission'
 
 type FormResponse = {
 	form: Form
@@ -12,10 +11,11 @@ type SubmissionResponse = {
 	submissions: Submission[]
 }
 
-const FormPage = () => {
-	const params = useParams()
-	const formId = params.id
+type FormPageProps = {
+	formId: string
+}
 
+const FormPage = ({ formId }: FormPageProps) => {
 	const { data: formData, error: formError } = useSWR<FormResponse, Error>(
 		`/api/forms/${formId}`,
 		fetcher,
