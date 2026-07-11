@@ -8,13 +8,12 @@ import {
 import {
 	Cog6ToothIcon,
 	GlobeAltIcon,
-	ServerIcon,
+	PaperClipIcon,
 	SignalIcon,
 	XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { Bars3Icon } from '@heroicons/react/20/solid'
-import Forms from './Sections/FormPage/FormsList'
-import FormsList from './Sections/FormPage/FormsList'
+import Forms from './Sections/Forms/FormsPage'
 import EmailPage from './Sections/Email/EmailPage'
 import { classNames } from '@/util/Classnames/Classnames'
 import AdminPage from './Sections/Admin/AdminPage'
@@ -24,19 +23,23 @@ import { useAppDispatch } from '@/redux/hooks'
 import { updateUser } from '@/redux/userSlice/userSlice'
 import type { User } from '@/types/User/User'
 import SettingsPage from './Sections/Settings/SettingsPage'
+import FormsPage from './Sections/Forms/FormsPage'
+import Button from '../UI/Button'
+import { useNavigate } from 'react-router'
 
 type GetUsersResponse = {
 	user: User
 }
 
 const navigation = [
-	{ name: 'Form', id: 'form', icon: ServerIcon, access: 'user' },
+	{ name: 'Form', id: 'form', icon: PaperClipIcon, access: 'user' },
 	{ name: 'Email Settings', id: 'email', icon: SignalIcon, access: 'user' },
 	{ name: 'Admin', id: 'admin', icon: GlobeAltIcon, access: 'admin' },
 	{ name: 'Settings', id: 'settings', icon: Cog6ToothIcon, access: 'user' },
 ]
 
 const Dashboard = () => {
+	const navigate = useNavigate()
 	const dispatch = useAppDispatch()
 	const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -55,7 +58,7 @@ const Dashboard = () => {
 	const getView = () => {
 		switch (currentView) {
 			case 'form':
-				return <FormsList />
+				return <FormsPage />
 			case 'email':
 				return <EmailPage />
 			case 'admin':
@@ -65,6 +68,21 @@ const Dashboard = () => {
 			default:
 				return <Forms />
 		}
+	}
+
+	const handleLogout = () => {
+		fetch('/api/auth/logout', {
+			method: 'GET',
+		})
+			.then((res) => {
+				if (!res.ok) {
+					throw new Error()
+				}
+				navigate('/')
+			})
+			.catch((err) => {
+				console.error(err)
+			})
 	}
 
 	return (
@@ -198,6 +216,9 @@ const Dashboard = () => {
 								</li>
 							</ul>
 						</nav>
+						<div className='p-2'>
+							<Button onClick={() => handleLogout()}>Logout</Button>
+						</div>
 					</div>
 				</div>
 

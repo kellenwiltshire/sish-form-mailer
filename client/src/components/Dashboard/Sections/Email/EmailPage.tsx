@@ -5,6 +5,7 @@ import DisplayEmailSettings from './DisplayEmailSettings'
 import Button from '@/components/UI/Button'
 import { useState } from 'react'
 import UpdateEmailSettings from './UpdateEmailSettings'
+import PageLayout from '@/Layout/PageLayout'
 
 type EmailResponse = {
 	smtp: Email | null
@@ -24,19 +25,18 @@ const EmailPage = () => {
 	const { smtp } = data
 
 	return (
-		<main>
-			<header className='flex items-center justify-between border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-6 lg:px-8'>
-				<h1 className='text-base/7 font-semibold text-gray-900'>
-					SMTP Settings
-				</h1>
-				{smtp && (
+		<PageLayout
+			title='SMTP Settings'
+			button={
+				smtp ? (
 					<div>
 						<Button onClick={() => setUpdateSettingsOpen((p) => !p)}>
 							{updateSettingsOpen ? 'Cancel' : 'Update Settings'}
 						</Button>
 					</div>
-				)}
-			</header>
+				) : null
+			}
+		>
 			{smtp && !updateSettingsOpen ? (
 				<DisplayEmailSettings smtp={smtp} />
 			) : (
@@ -50,7 +50,7 @@ const EmailPage = () => {
 					/>
 				</div>
 			)}
-		</main>
+		</PageLayout>
 	)
 }
 

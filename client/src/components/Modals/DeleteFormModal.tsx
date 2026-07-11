@@ -1,5 +1,8 @@
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { updateAddUserModalOpen } from '@/redux/modalSlice/modalSlice'
+import {
+	updateDeleteFormModalOpen,
+	updateSelectedForm,
+} from '@/redux/modalSlice/modalSlice'
 import {
 	Dialog,
 	DialogPanel,
@@ -7,55 +10,53 @@ import {
 	TransitionChild,
 } from '@headlessui/react'
 import { Fragment } from 'react/jsx-runtime'
-import Input from '../UI/Input'
-import SelectInput from '../UI/Select'
 import Button from '../UI/Button'
 import { toast } from 'react-toastify'
 import { useSWRConfig } from 'swr'
 
-const AddUserModal = () => {
+const DeleteFormModal = () => {
 	const { mutate } = useSWRConfig()
 	const dispatch = useAppDispatch()
-	const { addUserModalOpen } = useAppSelector((state) => state.modal)
+	const { deleteFormModalOpen, selectedForm: form } = useAppSelector(
+		(state) => state.modal,
+	)
 
-	const handleSubmit = (form: FormData) => {
-		const formData = Object.fromEntries(form.entries())
-
-		const { email, password, role } = formData
-
-		fetch('/api/admin/createUser', {
-			method: 'POST',
+	const handleDelete = () => {
+		if (!form) return
+		fetch(`/api/forms/${form.id}`, {
+			method: 'DELETE',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({
-				email,
-				password,
-				role,
-			}),
 		})
 			.then((res) => {
 				if (!res.ok) {
 					throw new Error()
 				}
-				toast.success('User Created')
+				toast.success('Form Delete')
 			})
 			.catch((err) => {
 				console.error(err)
 				toast.error('Error: Please try again later')
 			})
 			.finally(() => {
-				dispatch(updateAddUserModalOpen(false))
-				mutate('/api/admin/getUsers')
+				mutate('/api/forms')
+				dispatch(updateSelectedForm(null))
+				dispatch(updateDeleteFormModalOpen(false))
 			})
 	}
 
+	if (!form) {
+		dispatch(updateDeleteFormModalOpen(false))
+		return null
+	}
+
 	return (
-		<Transition show={addUserModalOpen} as={Fragment}>
+		<Transition show={deleteFormModalOpen} as={Fragment}>
 			<Dialog
 				as='div'
 				className='relative z-99'
-				onClose={() => dispatch(updateAddUserModalOpen(false))}
+				onClose={() => dispatch(updateDeleteFormModalOpen(false))}
 			>
 				<TransitionChild
 					as={Fragment}
@@ -82,46 +83,20 @@ const AddUserModal = () => {
 						>
 							<DialogPanel className='relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6'>
 								<div className='flex flex-col gap-4'>
-									<h3 className='text-center text-2xl'>Add User</h3>
-									<form action={handleSubmit} className='flex flex-col gap-4'>
-										<Input
-											id='email'
-											name='email'
-											placeholder='user@email.com'
-											type='text'
-											label='User Email Address'
-										/>
-										<Input
-											id='password'
-											name='password'
-											placeholder=''
-											type='password'
-											label='User Initial Password'
-										/>
-										<SelectInput
-											label='User Role'
-											name='role'
-											options={[
-												{
-													label: 'User',
-													value: 'user',
-												},
-												{
-													label: 'Admin',
-													value: 'admin',
-												},
-											]}
-										/>
-										<div className='flex flex-row gap-2'>
-											<Button
-												variant='ghost'
-												onClick={() => dispatch(updateAddUserModalOpen(false))}
-											>
-												Cancel
-											</Button>
-											<Button type='submit'>Submit</Button>
-										</div>
-									</form>
+									<h3 className='text-center text-2xl'>
+										Delete Form {form.name}?
+									</h3>
+									<div className='flex flex-row gap-2'>
+										<Button
+											variant='ghost'
+											onClick={() => dispatch(updateDeleteFormModalOpen(false))}
+										>
+											Cancel
+										</Button>
+										<Button variant='danger' onClick={() => handleDelete()}>
+											Delete
+										</Button>
+									</div>
 								</div>
 							</DialogPanel>
 						</TransitionChild>
@@ -132,4 +107,4 @@ const AddUserModal = () => {
 	)
 }
 
-export default AddUserModal
+export default DeleteFormModal

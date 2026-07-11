@@ -4,6 +4,7 @@ Backend:
 - Remember Me
 - Admin Edit User Route
 - Admin Get Users should also return how many forms each user has
+- Super admin role for initial admin
 
 Frontend:
 

@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { updateAddUserModalOpen } from '@/redux/modalSlice/modalSlice'
+import { updateAddFormModalOpen } from '@/redux/modalSlice/modalSlice'
 import {
 	Dialog,
 	DialogPanel,
@@ -8,54 +8,52 @@ import {
 } from '@headlessui/react'
 import { Fragment } from 'react/jsx-runtime'
 import Input from '../UI/Input'
-import SelectInput from '../UI/Select'
 import Button from '../UI/Button'
 import { toast } from 'react-toastify'
 import { useSWRConfig } from 'swr'
 
-const AddUserModal = () => {
+const AddFormModal = () => {
 	const { mutate } = useSWRConfig()
 	const dispatch = useAppDispatch()
-	const { addUserModalOpen } = useAppSelector((state) => state.modal)
+	const { addFormModalOpen } = useAppSelector((state) => state.modal)
 
 	const handleSubmit = (form: FormData) => {
 		const formData = Object.fromEntries(form.entries())
 
-		const { email, password, role } = formData
+		const { name, target_email } = formData
 
-		fetch('/api/admin/createUser', {
+		fetch('/api/forms', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
-				email,
-				password,
-				role,
+				name,
+				target_email,
 			}),
 		})
 			.then((res) => {
 				if (!res.ok) {
 					throw new Error()
 				}
-				toast.success('User Created')
+				toast.success('Form Created')
 			})
 			.catch((err) => {
 				console.error(err)
 				toast.error('Error: Please try again later')
 			})
 			.finally(() => {
-				dispatch(updateAddUserModalOpen(false))
-				mutate('/api/admin/getUsers')
+				mutate('/api/forms')
+				dispatch(updateAddFormModalOpen(false))
 			})
 	}
 
 	return (
-		<Transition show={addUserModalOpen} as={Fragment}>
+		<Transition show={addFormModalOpen} as={Fragment}>
 			<Dialog
 				as='div'
 				className='relative z-99'
-				onClose={() => dispatch(updateAddUserModalOpen(false))}
+				onClose={() => dispatch(updateAddFormModalOpen(false))}
 			>
 				<TransitionChild
 					as={Fragment}
@@ -82,40 +80,27 @@ const AddUserModal = () => {
 						>
 							<DialogPanel className='relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6'>
 								<div className='flex flex-col gap-4'>
-									<h3 className='text-center text-2xl'>Add User</h3>
+									<h3 className='text-center text-2xl'>Create Form</h3>
 									<form action={handleSubmit} className='flex flex-col gap-4'>
 										<Input
-											id='email'
-											name='email'
-											placeholder='user@email.com'
+											id='name'
+											name='name'
+											placeholder='New Form'
 											type='text'
-											label='User Email Address'
+											label='Form Name'
 										/>
 										<Input
-											id='password'
-											name='password'
-											placeholder=''
-											type='password'
-											label='User Initial Password'
+											id='target_email'
+											name='target_email'
+											placeholder='target@email.com'
+											type='text'
+											label='Target Email'
 										/>
-										<SelectInput
-											label='User Role'
-											name='role'
-											options={[
-												{
-													label: 'User',
-													value: 'user',
-												},
-												{
-													label: 'Admin',
-													value: 'admin',
-												},
-											]}
-										/>
+
 										<div className='flex flex-row gap-2'>
 											<Button
 												variant='ghost'
-												onClick={() => dispatch(updateAddUserModalOpen(false))}
+												onClick={() => dispatch(updateAddFormModalOpen(false))}
 											>
 												Cancel
 											</Button>
@@ -132,4 +117,4 @@ const AddUserModal = () => {
 	)
 }
 
-export default AddUserModal
+export default AddFormModal
