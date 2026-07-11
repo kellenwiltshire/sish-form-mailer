@@ -1,0 +1,57 @@
+import useSWR from 'swr'
+import { type Email } from '@/types/Email/Email'
+import { fetcher } from '@/util/SWR/fetch'
+import DisplayEmailSettings from './DisplayEmailSettings'
+import Button from '@/components/UI/Button'
+import { useState } from 'react'
+import UpdateEmailSettings from './UpdateEmailSettings'
+import PageLayout from '@/Layout/PageLayout'
+
+type EmailResponse = {
+	smtp: Email | null
+}
+
+const EmailPage = () => {
+	const [updateSettingsOpen, setUpdateSettingsOpen] = useState(false)
+	const { data, error } = useSWR<EmailResponse, Error>(
+		'/api/email-settings',
+		fetcher,
+	)
+
+	if (!data) return <div>Loading...</div>
+
+	if (error) return <div>error</div>
+
+	const { smtp } = data
+
+	return (
+		<PageLayout
+			title='SMTP Settings'
+			button={
+				smtp ? (
+					<div>
+						<Button onClick={() => setUpdateSettingsOpen((p) => !p)}>
+							{updateSettingsOpen ? 'Cancel' : 'Update Settings'}
+						</Button>
+					</div>
+				) : null
+			}
+		>
+			{smtp && !updateSettingsOpen ? (
+				<DisplayEmailSettings smtp={smtp} />
+			) : (
+				<div className='mt-5 divide-y divide-gray-900/10 px-4'>
+					<h3 className='text-2xl'>
+						{smtp ? 'Update Email Settings' : 'Add Email Settings'}
+					</h3>
+					<UpdateEmailSettings
+						smtp={smtp}
+						setUpdateSettingsOpen={setUpdateSettingsOpen}
+					/>
+				</div>
+			)}
+		</PageLayout>
+	)
+}
+
+export default EmailPage

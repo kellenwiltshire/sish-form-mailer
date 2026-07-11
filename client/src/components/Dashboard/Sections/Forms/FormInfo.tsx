@@ -1,0 +1,51 @@
+import Button from '@/components/UI/Button'
+import { useAppDispatch } from '@/redux/hooks'
+import {
+	updateDeleteFormModalOpen,
+	updateSelectedForm,
+} from '@/redux/modalSlice/modalSlice'
+import type { Form } from '@/types/Form/Form'
+
+const FormInfo = ({ form }: { form: Form }) => {
+	const dispatch = useAppDispatch()
+	return (
+		<dl className='mx-auto flex w-full flex-row flex-wrap justify-between p-2'>
+			<div className='flex flex-wrap items-baseline justify-between gap-y-2 py-10'>
+				<dt className='text-sm/6 font-medium text-gray-500'>Form ID</dt>
+				<dd className='w-full flex-none text-xl font-medium tracking-tight text-gray-900'>
+					{form.id}
+				</dd>
+			</div>
+
+			<div className='flex flex-wrap items-baseline justify-between gap-y-2 py-10'>
+				<dt className='text-sm/6 font-medium text-gray-500'>Form Name</dt>
+				<dd className='w-full flex-none text-xl font-medium tracking-tight text-gray-900'>
+					{form.name}
+				</dd>
+			</div>
+
+			<div className='flex flex-wrap items-baseline justify-between gap-y-2 py-10'>
+				<dt className='text-sm/6 font-medium text-gray-500'>Target Email</dt>
+				<dd className='w-full flex-none text-xl font-medium tracking-tight text-gray-900'>
+					{form.target_email}
+				</dd>
+			</div>
+			<div className='flex flex-wrap items-baseline justify-between gap-y-2 py-10'>
+				<Button>Edit Form</Button>
+			</div>
+			<div className='flex flex-wrap items-baseline justify-between gap-y-2 py-10'>
+				<Button
+					variant='danger'
+					onClick={() => {
+						dispatch(updateSelectedForm(form))
+						dispatch(updateDeleteFormModalOpen(true))
+					}}
+				>
+					Delete Form
+				</Button>
+			</div>
+		</dl>
+	)
+}
+
+export default FormInfo

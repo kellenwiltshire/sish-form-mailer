@@ -3,125 +3,87 @@ import {
 	Dialog,
 	DialogBackdrop,
 	DialogPanel,
-	Menu,
-	MenuButton,
-	MenuItem,
-	MenuItems,
 	TransitionChild,
 } from '@headlessui/react'
 import {
-	ChartBarSquareIcon,
 	Cog6ToothIcon,
-	FolderIcon,
 	GlobeAltIcon,
-	ServerIcon,
+	PaperClipIcon,
 	SignalIcon,
 	XMarkIcon,
 } from '@heroicons/react/24/outline'
-import {
-	Bars3Icon,
-	ChevronRightIcon,
-	ChevronUpDownIcon,
-	MagnifyingGlassIcon,
-} from '@heroicons/react/20/solid'
-import Forms from '../Forms/Forms'
+import { Bars3Icon } from '@heroicons/react/20/solid'
+import Forms from './Sections/Forms/FormsPage'
+import EmailPage from './Sections/Email/EmailPage'
+import { classNames } from '@/util/Classnames/Classnames'
+import AdminPage from './Sections/Admin/AdminPage'
+import useSWR from 'swr'
+import { fetcher } from '@/util/SWR/fetch'
+import { useAppDispatch } from '@/redux/hooks'
+import { updateUser } from '@/redux/userSlice/userSlice'
+import type { User } from '@/types/User/User'
+import SettingsPage from './Sections/Settings/SettingsPage'
+import FormsPage from './Sections/Forms/FormsPage'
+import Button from '../UI/Button'
+import { useNavigate } from 'react-router'
 
-const navigation = [
-	{ name: 'Form', href: '#', icon: ServerIcon, current: true },
-	{ name: 'Email Settings', href: '#', icon: SignalIcon, current: false },
-	{ name: 'Admin', href: '#', icon: GlobeAltIcon, current: false },
-	{ name: 'Settings', href: '#', icon: Cog6ToothIcon, current: false },
-]
-
-const deployments = [
-	{
-		id: 1,
-		href: '#',
-		projectName: 'ios-app',
-		teamName: 'Planetaria',
-		status: 'offline',
-		statusText: 'Initiated 1m 32s ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 2,
-		href: '#',
-		projectName: 'mobile-api',
-		teamName: 'Planetaria',
-		status: 'online',
-		statusText: 'Deployed 3m ago',
-		description: 'Deploys from GitHub',
-		environment: 'Production',
-	},
-	{
-		id: 3,
-		href: '#',
-		projectName: 'tailwindcss.com',
-		teamName: 'Tailwind Labs',
-		status: 'offline',
-		statusText: 'Deployed 3h ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 4,
-		href: '#',
-		projectName: 'company-website',
-		teamName: 'Tailwind Labs',
-		status: 'online',
-		statusText: 'Deployed 1d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 5,
-		href: '#',
-		projectName: 'relay-service',
-		teamName: 'Protocol',
-		status: 'online',
-		statusText: 'Deployed 1d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Production',
-	},
-	{
-		id: 6,
-		href: '#',
-		projectName: 'android-app',
-		teamName: 'Planetaria',
-		status: 'online',
-		statusText: 'Deployed 5d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 7,
-		href: '#',
-		projectName: 'api.protocol.chat',
-		teamName: 'Protocol',
-		status: 'error',
-		statusText: 'Failed to deploy 6d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-	{
-		id: 8,
-		href: '#',
-		projectName: 'planetaria.tech',
-		teamName: 'Planetaria',
-		status: 'online',
-		statusText: 'Deployed 6d ago',
-		description: 'Deploys from GitHub',
-		environment: 'Preview',
-	},
-]
-
-export function classNames(...classes) {
-	return classes.filter(Boolean).join(' ')
+type GetUsersResponse = {
+	user: User
 }
 
+const navigation = [
+	{ name: 'Form', id: 'form', icon: PaperClipIcon, access: 'user' },
+	{ name: 'Email Settings', id: 'email', icon: SignalIcon, access: 'user' },
+	{ name: 'Admin', id: 'admin', icon: GlobeAltIcon, access: 'admin' },
+	{ name: 'Settings', id: 'settings', icon: Cog6ToothIcon, access: 'user' },
+]
+
 const Dashboard = () => {
+	const navigate = useNavigate()
+	const dispatch = useAppDispatch()
 	const [sidebarOpen, setSidebarOpen] = useState(false)
+
+	const [currentView, setCurrentView] = useState('form')
+
+	const { data, error } = useSWR<GetUsersResponse, Error>('/api/user', fetcher)
+
+	if (error) {
+		console.log(error)
+	}
+
+	if (data) {
+		dispatch(updateUser(data.user))
+	}
+
+	const getView = () => {
+		switch (currentView) {
+			case 'form':
+				return <FormsPage />
+			case 'email':
+				return <EmailPage />
+			case 'admin':
+				return <AdminPage />
+			case 'settings':
+				return <SettingsPage />
+			default:
+				return <Forms />
+		}
+	}
+
+	const handleLogout = () => {
+		fetch('/api/auth/logout', {
+			method: 'GET',
+		})
+			.then((res) => {
+				if (!res.ok) {
+					throw new Error()
+				}
+				navigate('/')
+			})
+			.catch((err) => {
+				console.error(err)
+			})
+	}
 
 	return (
 		<>
@@ -170,30 +132,38 @@ const Dashboard = () => {
 									<ul role='list' className='flex flex-1 flex-col gap-y-7'>
 										<li>
 											<ul role='list' className='-mx-2 space-y-1'>
-												{navigation.map((item) => (
-													<li key={item.name}>
-														<a
-															href={item.href}
-															className={classNames(
-																item.current
-																	? 'bg-gray-100 text-indigo-600'
-																	: 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600',
-																'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
-															)}
-														>
-															<item.icon
-																aria-hidden='true'
+												{navigation.map((item) => {
+													if (
+														item.access === 'admin' &&
+														data?.user.role !== 'admin'
+													) {
+														return null
+													}
+													return (
+														<li key={item.name}>
+															<a
+																href={item.id}
 																className={classNames(
-																	item.current
-																		? 'text-indigo-600'
-																		: 'text-gray-400 group-hover:text-indigo-600',
-																	'size-6 shrink-0',
+																	item.id === currentView
+																		? 'bg-gray-100 text-indigo-600'
+																		: 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600',
+																	'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 																)}
-															/>
-															{item.name}
-														</a>
-													</li>
-												))}
+															>
+																<item.icon
+																	aria-hidden='true'
+																	className={classNames(
+																		item.id === currentView
+																			? 'text-indigo-600'
+																			: 'text-gray-400 group-hover:text-indigo-600',
+																		'size-6 shrink-0',
+																	)}
+																/>
+																{item.name}
+															</a>
+														</li>
+													)
+												})}
 											</ul>
 										</li>
 									</ul>
@@ -220,32 +190,35 @@ const Dashboard = () => {
 									<ul role='list' className='-mx-2 space-y-1'>
 										{navigation.map((item) => (
 											<li key={item.name}>
-												<a
-													href={item.href}
+												<button
+													onClick={() => setCurrentView(item.id)}
 													className={classNames(
-														item.current
+														item.id === currentView
 															? 'bg-gray-100 text-indigo-600'
 															: 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600',
-														'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
+														'group flex w-full cursor-pointer gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 													)}
 												>
 													<item.icon
 														aria-hidden='true'
 														className={classNames(
-															item.current
+															item.id === currentView
 																? 'text-indigo-600'
 																: 'text-gray-400 group-hover:text-indigo-600',
 															'size-6 shrink-0',
 														)}
 													/>
 													{item.name}
-												</a>
+												</button>
 											</li>
 										))}
 									</ul>
 								</li>
 							</ul>
 						</nav>
+						<div className='p-2'>
+							<Button onClick={() => handleLogout()}>Logout</Button>
+						</div>
 					</div>
 				</div>
 
@@ -261,7 +234,9 @@ const Dashboard = () => {
 							<Bars3Icon aria-hidden='true' className='size-5' />
 						</button>
 					</div>
-					<Forms />
+					<main className='flex min-h-screen items-center justify-center'>
+						{getView()}
+					</main>
 				</div>
 			</div>
 		</>

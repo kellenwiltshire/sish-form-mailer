@@ -31,7 +31,7 @@ func Routes(app *app.Application) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	viteProxy := createViteProxy("http://172.26.0.4:5173")
+	viteProxy := createViteProxy("http://web:5173")
 
 	r.Group(func(r chi.Router) {
 		r.Use(app.Middleware.Authenticate)
@@ -69,6 +69,7 @@ func Routes(app *app.Application) *chi.Mux {
 		// Admin User Routes
 		r.Get("/api/admin/getUsers", app.Middleware.RequireAdmin(app.UserHandler.HandleGetAllUsers))
 		r.Post("/api/admin/createUser", app.Middleware.RequireAdmin(app.UserHandler.HandleCreateUser))
+		r.Put("/api/admin/editUser/{id}", app.Middleware.RequireAdmin(app.UserHandler.HandleCreateUser))
 		r.Delete("/api/admin/deleteUser/{id}", app.Middleware.RequireAdmin(app.UserHandler.HandleDeleteUser))
 
 	})
