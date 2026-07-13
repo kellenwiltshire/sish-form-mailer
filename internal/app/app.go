@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"time"
 
 	"github.com/kellenwiltshire/formality/internal/api"
 	"github.com/kellenwiltshire/formality/internal/middleware"
@@ -23,7 +24,9 @@ type Application struct {
 
 	SendMailService *service.SendMailService
 
-	Middleware middleware.UserMiddleware
+	AuthMiddleware         middleware.UserMiddleware
+	RateLimiter            *middleware.LimiterMiddleware
+	RateLimiterSubmissions *middleware.LimiterMiddleware
 }
 
 func NewApplication() (*Application, error) {
@@ -53,7 +56,10 @@ func NewApplication() (*Application, error) {
 	sendMailService := service.NewSendMailService(formStore, submissionsStore, smtpStore, logger)
 	smtpHandler := api.NewSmtpHandler(smtpStore, *sendMailService, logger)
 
-	middleware := middleware.UserMiddleware{UserStore: userStore}
+	AuthMiddleware := middleware.UserMiddleware{UserStore: userStore}
+
+	rateLimiter := middleware.NewLimiterMiddleware(logger, 10, 1, time.Second)
+	rateLimiterSubmissions := middleware.NewLimiterMiddleware(logger, 2, 1, 12*time.Hour)
 
 	app := &Application{
 		Logger:             logger,
@@ -66,7 +72,9 @@ func NewApplication() (*Application, error) {
 
 		SendMailService: sendMailService,
 
-		Middleware: middleware,
+		AuthMiddleware:         AuthMiddleware,
+		RateLimiter:            rateLimiter,
+		RateLimiterSubmissions: rateLimiterSubmissions,
 	}
 
 	return app, nil

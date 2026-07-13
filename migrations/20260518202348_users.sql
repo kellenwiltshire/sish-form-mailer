@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TYPE user_role AS ENUM ('user', 'admin');
+CREATE TYPE user_role AS ENUM ('user', 'admin', 'super_admin');
 -- +goose StatementEnd
 
 CREATE TABLE IF NOT EXISTS users (

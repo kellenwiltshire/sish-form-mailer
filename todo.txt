@@ -2,6 +2,8 @@ Backend:
 
 - Rate Limiting
 - Remember Me
+- Forgot password
+- Too many wrong passwords
 - Admin Edit User Route
 - Admin Get Users should also return how many forms each user has
 - Super admin role for initial admin
@@ -11,3 +13,8 @@ Frontend:
 - Remember Me
 - pre-commit (lint, test, knip)
 - Admin users page should show how many forms each user has
+
+Overall: 
+
+- Production image build process
+- Github actions update
