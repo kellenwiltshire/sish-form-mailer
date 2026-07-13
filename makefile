@@ -14,13 +14,8 @@ build:
 build-image:
 	docker buildx build \
 		--platform "linux/amd64" \
-		--tag "$(BUILD_IMAGE):$(GIT_SHA)-build" \
-		--target "build" \
-		.
-	docker buildx build \
-		--cache-from "$(BUILD_IMAGE):$(GIT_SHA)-build" \
-		--platform "linux/amd64" \
 		--tag "$(BUILD_IMAGE):$(GIT_SHA)" \
+		--load \
 		.
 
 build-image-login:

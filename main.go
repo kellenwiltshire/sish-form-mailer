@@ -33,6 +33,9 @@ func main() {
 		app.Logger.Printf("Error: CreateAdminUser %v", err)
 	}
 
+	app.RateLimiter.StartCleanUp(10*time.Minute, 1*time.Minute)
+	app.RateLimiterSubmissions.StartCleanUp(10*time.Minute, 1*time.Minute)
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 

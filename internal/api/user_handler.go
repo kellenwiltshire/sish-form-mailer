@@ -180,7 +180,7 @@ func (h *UserHandler) HandleGetAllUsers(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *UserHandler) HandleCreateAdminUser() error {
-	numUsers, err := h.userStore.GetNumberAdminUsers()
+	numUsers, err := h.userStore.GetNumberSuperAdminUsers()
 	if err != nil {
 		return err
 	}
@@ -197,7 +197,7 @@ func (h *UserHandler) HandleCreateAdminUser() error {
 
 		user := &store.User{
 			Email: "admin@email.com",
-			Role:  "admin",
+			Role:  "super_admin",
 		}
 
 		err = user.PasswordHash.Set(adminPass)
@@ -213,5 +213,41 @@ func (h *UserHandler) HandleCreateAdminUser() error {
 		return fmt.Errorf("Already an Admin User")
 	}
 	return nil
+}
 
+func (h *UserHandler) HandleResetAdminPassword(w http.ResponseWriter, r *http.Request) {
+	paramPass := r.URL.Query().Get("admin_pass")
+
+	if paramPass != "" {
+		adminPass := os.Getenv("ADMIN_PASS")
+
+		if adminPass == paramPass {
+			existingUser, err := h.userStore.GetSuperAdmin()
+			if err != nil {
+				h.logger.Printf("Error: handleResetAdminPassword %v", err)
+				util.WriteJSON(w, http.StatusOK, util.Envelope{"": ""})
+				return
+			}
+
+			newPass := util.RandomString(12)
+
+			err = existingUser.PasswordHash.Set(newPass)
+			if err != nil {
+				h.logger.Printf("ERROR: hashing password %v", err)
+				util.WriteJSON(w, http.StatusOK, util.Envelope{"": ""})
+				return
+			}
+
+			err = h.userStore.UpdateSuperAdmin(existingUser)
+			if err != nil {
+				h.logger.Printf("ERROR: updatingUser: %v", err)
+				util.WriteJSON(w, http.StatusOK, util.Envelope{"": ""})
+				return
+			}
+
+			h.logger.Printf("New Admin Password: %v\n", newPass)
+		}
+	}
+
+	util.WriteJSON(w, http.StatusOK, util.Envelope{"": ""})
 }

@@ -72,9 +72,11 @@ type UserStore interface {
 	UpdateUser(*User) error
 	DeleteUser(id int64) error
 	GetAllUsers() ([]User, error)
-	GetNumberAdminUsers() (*int64, error)
+	GetNumberSuperAdminUsers() (*int64, error)
 	GetUserToken(plaintextPassword string) (*User, error)
 	GetAdminToken(plaintextPassword string) (*User, error)
+	GetSuperAdmin() (*User, error)
+	UpdateSuperAdmin(user *User) error
 }
 
 func (s *PostgresUserStore) CreateUser(user *User) error {
@@ -93,10 +95,10 @@ func (s *PostgresUserStore) GetUser(id int64) (*User, error) {
 	user := &User{}
 
 	query := `
-		SELECT id, email, role, created_at FROM users WHERE id = $1
+		SELECT id, email, role, password_hash, created_at FROM users WHERE id = $1
 	`
 
-	err := s.db.QueryRow(query, id).Scan(&user.Id, &user.Email, &user.Role, &user.CreatedAt)
+	err := s.db.QueryRow(query, id).Scan(&user.Id, &user.Email, &user.Role, &user.PasswordHash.hash, &user.CreatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -140,9 +142,9 @@ func (s *PostgresUserStore) GetUserByEmail(username string) (*User, error) {
 
 func (s *PostgresUserStore) UpdateUser(user *User) error {
 	query := `
-		UPDATE users SET email = $1, role = $2 WHERE id = $3
+		UPDATE users SET email = $1, role = $2, password_hash = $3 WHERE id = $4
 	`
-	result, err := s.db.Exec(query, user.Email, user.Role, user.Id)
+	result, err := s.db.Exec(query, user.Email, user.Role, user.PasswordHash.hash, user.Id)
 	if err != nil {
 		return err
 	}
@@ -204,17 +206,53 @@ func (s *PostgresUserStore) GetAllUsers() ([]User, error) {
 	return users, nil
 }
 
-func (s *PostgresUserStore) GetNumberAdminUsers() (*int64, error) {
+func (s *PostgresUserStore) GetNumberSuperAdminUsers() (*int64, error) {
 	query := `
 		SELECT COUNT(*) FROM users WHERE role = $1
 	`
 	var count *int64
-	err := s.db.QueryRow(query, tokens.ScopeAdmin).Scan(&count)
+	err := s.db.QueryRow(query, tokens.ScopeSuper).Scan(&count)
 	if err != nil {
 		return nil, err
 	}
 
 	return count, nil
+}
+
+func (s *PostgresUserStore) GetSuperAdmin() (*User, error) {
+	user := &User{}
+
+	query := `
+		SELECT id, email, role, password_hash, created_at FROM users WHERE role = 'super_admin'
+	`
+
+	err := s.db.QueryRow(query).Scan(&user.Id, &user.Email, &user.Role, &user.PasswordHash.hash, &user.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *PostgresUserStore) UpdateSuperAdmin(user *User) error {
+	query := `
+		UPDATE users SET password_hash = $1 WHERE role = 'super_admin'
+	`
+	result, err := s.db.Exec(query, user.PasswordHash.hash)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (s *PostgresUserStore) GetUserToken(token_hash string) (*User, error) {

@@ -10,6 +10,7 @@ import (
 const (
 	ScopeAuth  = "user"
 	ScopeAdmin = "admin"
+	ScopeSuper = "super_admin"
 )
 
 type Token struct {
