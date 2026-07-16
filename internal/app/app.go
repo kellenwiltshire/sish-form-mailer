@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/kellenwiltshire/formality/internal/api"
-	"github.com/kellenwiltshire/formality/internal/middleware"
-	"github.com/kellenwiltshire/formality/internal/service"
-	"github.com/kellenwiltshire/formality/internal/store"
-	"github.com/kellenwiltshire/formality/migrations"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/api"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/middleware"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/service"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/store"
+	"github.com/kellenwiltshire/sish-form-mailer/migrations"
 )
 
 type Application struct {
@@ -47,11 +47,12 @@ func NewApplication() (*Application, error) {
 	smtpStore := store.NewPostgresSmtpStore(pgDb)
 	submissionsStore := store.NewPostgresSubmissionsStore(pgDb)
 	tokenStore := store.NewPostgresTokenStore(pgDb)
+	lockoutStore := store.NewPostgresLockoutStore(pgDb)
 
 	userHandler := api.NewUserHandler(userStore, logger)
 	formHandler := api.NewFormHandler(formStore, logger)
 	submissionsHandler := api.NewSubmissionHandler(submissionsStore, logger)
-	tokenHandler := api.NewTokenHandler(tokenStore, userStore, logger)
+	tokenHandler := api.NewTokenHandler(tokenStore, userStore, lockoutStore, logger)
 
 	sendMailService := service.NewSendMailService(formStore, submissionsStore, smtpStore, logger)
 	smtpHandler := api.NewSmtpHandler(smtpStore, *sendMailService, logger)

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/kellenwiltshire/formality/internal/tokens"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/tokens"
 )
 
 type PostgresTokenStore struct {

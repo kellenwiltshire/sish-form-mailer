@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/kellenwiltshire/formality/internal/app"
-	"github.com/kellenwiltshire/formality/internal/util"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/app"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/util"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

@@ -5,7 +5,7 @@ import (
 	netSmtp "net/smtp"
 	"strconv"
 
-	"github.com/kellenwiltshire/formality/internal/store"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/store"
 )
 
 type SendMailService struct {
@@ -49,7 +49,7 @@ func (s *SendMailService) SendMail(submission_id string) error {
 
 	to := []string{smtp.RecipientEmail}
 	msg := []byte("To: " + smtp.RecipientEmail + "\r\n" +
-		"Subject: New Form Response For " + form.Name + " From Formality\r\n" +
+		"Subject: New Form Response For " + form.Name + " From sish-form-mailer\r\n" +
 		"\r\n" +
 		string(submission.Payload))
 
@@ -77,7 +77,7 @@ func (s *SendMailService) TestSendMail(userId int64, testPayload string) error {
 
 	to := []string{smtp.RecipientEmail}
 	msg := []byte("To: " + smtp.RecipientEmail + "\r\n" +
-		"Subject: Testing Email Settings From Formality\r\n" +
+		"Subject: Testing Email Settings From sish-form-mailer\r\n" +
 		"\r\n" +
 		testPayload)
 

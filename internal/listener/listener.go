@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/kellenwiltshire/formality/internal/app"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/app"
 
 	"github.com/lib/pq"
 )

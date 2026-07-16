@@ -1,24 +1,30 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 
 function App() {
 	const navigate = useNavigate()
+	const [invalid, setInvalid] = useState(false)
 	const handleSubmit = (form: FormData) => {
 		const formData = Object.fromEntries(form.entries())
 
-		const { email, password } = formData
+		const { email, password, remember } = formData
+
+		const rememberMe = (remember && remember.valueOf() === 'on') || false
 
 		fetch('http://localhost:8080/api/auth/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ email, password }),
+			body: JSON.stringify({ email, password, remember: rememberMe }),
 		})
 			.then((res) => {
 				if (!res.ok) {
+					setInvalid(true)
 					throw new Error()
+				} else {
+					navigate('/dashboard')
 				}
-				navigate('/dashboard')
 			})
 
 			.catch((err) => console.error(err))
@@ -27,14 +33,17 @@ function App() {
 		<main className='flex min-h-screen items-center justify-center'>
 			<div className='flex min-h-full w-full flex-col justify-center py-12 sm:px-6 lg:px-8'>
 				<div className='sm:mx-auto sm:w-full sm:max-w-md'>
-					Formality Logo
+					SiSH Logo
 					<h2 className='mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900'>
-						Sign in to your account
+						Sign in to Form Mailer
 					</h2>
 				</div>
 
 				<div className='mt-10 sm:mx-auto sm:w-full sm:max-w-120'>
 					<div className='bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12'>
+						{invalid && (
+							<h4 className='text-center text-red-400'>Invalid Credentials</h4>
+						)}
 						<form action={handleSubmit} className='space-y-6'>
 							<div>
 								<label
@@ -79,8 +88,8 @@ function App() {
 									<div className='flex h-6 shrink-0 items-center'>
 										<div className='group grid size-4 grid-cols-1'>
 											<input
-												id='remember-me'
-												name='remember-me'
+												id='remember'
+												name='remember'
 												type='checkbox'
 												className='col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto'
 											/>
@@ -107,7 +116,7 @@ function App() {
 										</div>
 									</div>
 									<label
-										htmlFor='remember-me'
+										htmlFor='remember'
 										className='block text-sm/6 text-gray-900'
 									>
 										Remember me
