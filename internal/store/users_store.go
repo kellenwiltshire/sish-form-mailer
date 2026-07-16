@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/kellenwiltshire/formality/internal/tokens"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/tokens"
 
 	"golang.org/x/crypto/bcrypt"
 )

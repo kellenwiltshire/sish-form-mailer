@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/kellenwiltshire/formality/internal/middleware"
-	"github.com/kellenwiltshire/formality/internal/store"
-	"github.com/kellenwiltshire/formality/internal/util"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/middleware"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/store"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/util"
 )
 
 type registerUserRequest struct {

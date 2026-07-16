@@ -1,15 +1,15 @@
 REGISTRY_HOST := kellenwiltshire
-BUILD_IMAGE := $(REGISTRY_HOST)/formality
+BUILD_IMAGE := $(REGISTRY_HOST)/sish-form-mailer
 GIT_SHA :=$(shell git rev-parse HEAD)
 BUILD_TAG ?= $(GIT_SHA)
 
 .DEFAULT_GOAL := run
 
 run:
-	go run main.go
+	docker compose up --build -d
 
 build:
-	go build -o ./formality main.go
+	go build -o ./sish-form-mailer main.go
 
 build-image:
 	docker buildx build \

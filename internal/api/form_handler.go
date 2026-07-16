@@ -7,9 +7,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/kellenwiltshire/formality/internal/middleware"
-	"github.com/kellenwiltshire/formality/internal/store"
-	"github.com/kellenwiltshire/formality/internal/util"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/middleware"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/store"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/util"
 
 	"github.com/go-chi/chi/v5"
 )

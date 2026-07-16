@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kellenwiltshire/formality/internal/app"
-	"github.com/kellenwiltshire/formality/internal/listener"
-	"github.com/kellenwiltshire/formality/internal/routes"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/app"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/listener"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/routes"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/kellenwiltshire/formality
+module github.com/kellenwiltshire/sish-form-mailer
 
 go 1.26.3
 

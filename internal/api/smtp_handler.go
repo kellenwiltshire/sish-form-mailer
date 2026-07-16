@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/kellenwiltshire/formality/internal/middleware"
-	"github.com/kellenwiltshire/formality/internal/service"
-	"github.com/kellenwiltshire/formality/internal/store"
-	"github.com/kellenwiltshire/formality/internal/util"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/middleware"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/service"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/store"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/util"
 )
 
 type registerSmtpRequest struct {
@@ -242,7 +242,7 @@ func (h *SmtpHandler) HandleDeleteSmtpSetting(w http.ResponseWriter, r *http.Req
 func (h *SmtpHandler) HandleTestEmail(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUser(r)
 
-	payload := "This is a test email for Formality!"
+	payload := "This is a test email for sish-form-mailer!"
 
 	err := h.sendMailService.TestSendMail(int64(user.Id), payload)
 	if err != nil {
