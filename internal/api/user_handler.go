@@ -287,16 +287,6 @@ func (h *UserHandler) HandleGetAllUsers(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	for _, user := range users {
-		count, err := h.formStore.GetNumberOfFormsForUser(int64(user.Id))
-		if err != nil {
-			h.logger.Printf("Error: getNumberOfFormsForUser %d %v", user.Id, err)
-			util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "Error getting all users"})
-			return
-		}
-		user.NumForms = int(count)
-	}
-
 	util.WriteJSON(w, http.StatusOK, util.Envelope{"users": users})
 }
 
