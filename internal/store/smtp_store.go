@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
 	"fmt"
@@ -22,14 +23,12 @@ func (e *encryption) EncryptAES(plaintext string) error {
 		return fmt.Errorf("Error getting secret key from environment")
 	}
 
-	key, err := base64.StdEncoding.DecodeString(secretKey)
-	if err != nil {
-		return fmt.Errorf("invalid key format: %w", err)
-	}
+	hash := sha256.Sum256([]byte(secretKey))
+	key := hash[:]
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create AES cipher: %w", err)
 	}
 
 	gcm, err := cipher.NewGCM(block)
@@ -53,13 +52,12 @@ func (e *encryption) EncryptAES(plaintext string) error {
 func (e *encryption) DecryptAES(encrypted string) (string, error) {
 	secretKey := os.Getenv("SECRET_KEY")
 	if secretKey == "" {
-		return "", fmt.Errorf("Error getting secret key from environment")
+		return "", fmt.Errorf("SECRET_KEY environment variable is not set")
 	}
 
-	key, err := base64.StdEncoding.DecodeString(secretKey)
-	if err != nil {
-		return "", fmt.Errorf("invalid key format: %w", err)
-	}
+	// Match EncryptAES: derive 32-byte key via SHA-256
+	hash := sha256.Sum256([]byte(secretKey))
+	key := hash[:]
 
 	ciphertext, err := base64.StdEncoding.DecodeString(encrypted)
 	if err != nil {
@@ -68,12 +66,12 @@ func (e *encryption) DecryptAES(encrypted string) (string, error) {
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create AES cipher: %w", err)
 	}
 
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create GCM: %w", err)
 	}
 
 	nonceSize := gcm.NonceSize()
@@ -89,7 +87,11 @@ func (e *encryption) DecryptAES(encrypted string) (string, error) {
 		return "", fmt.Errorf("decryption failed: %w", err)
 	}
 
-	return string(plaintext), nil
+	decryptedStr := string(plaintext)
+	e.plaintext = &decryptedStr
+	e.cipher = encrypted
+
+	return decryptedStr, nil
 }
 
 type Smtp struct {
@@ -197,27 +199,40 @@ func (s *PostgresSmtpStore) DeleteSmtpSettings(user_id int64) error {
 	return nil
 }
 
-func (s *PostgresSmtpStore) GetSmtpEmailSettings(user_id int64) (*Smtp, string, error) {
+func (s *PostgresSmtpStore) GetSmtpEmailSettings(userID int64) (*Smtp, string, error) {
 	smtp := &Smtp{}
 
 	query := `
-		SELECT id, user_id, host, port, username, password_encrypted, encryption_type, updated_at, recipient_email, sender_email FROM smtp_settings WHERE user_id = $1
-	`
+        SELECT id, user_id, host, port, username, password_encrypted, encryption_type, updated_at, recipient_email, sender_email 
+        FROM smtp_settings 
+        WHERE user_id = $1
+    `
 
-	var password string
+	var encryptedPassword string
 
-	err := s.db.QueryRow(query, user_id).Scan(&smtp.Id, &smtp.UserID, &smtp.Host, &smtp.Port, &smtp.Username, &password, &smtp.EncryptionType, &smtp.UpdatedAt, &smtp.RecipientEmail, &smtp.SenderEmail)
+	err := s.db.QueryRow(query, userID).Scan(
+		&smtp.Id,
+		&smtp.UserID,
+		&smtp.Host,
+		&smtp.Port,
+		&smtp.Username,
+		&encryptedPassword,
+		&smtp.EncryptionType,
+		&smtp.UpdatedAt,
+		&smtp.RecipientEmail,
+		&smtp.SenderEmail,
+	)
 	if err == sql.ErrNoRows {
 		return nil, "", nil
 	}
-
 	if err != nil {
 		return nil, "", err
 	}
 
-	decrypted_pass, err := smtp.PasswordEncrypted.DecryptAES(password)
+	decryptedPass, err := smtp.PasswordEncrypted.DecryptAES(encryptedPassword)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to decrypt smtp password: %w", err)
+	}
 
-	smtp.PasswordEncrypted.plaintext = &decrypted_pass
-
-	return smtp, decrypted_pass, nil
+	return smtp, decryptedPass, nil
 }

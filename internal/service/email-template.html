@@ -1,0 +1,64 @@
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<style>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+				color: #111827;
+				margin: 0;
+				padding: 20px;
+			}
+			h1 {
+				font-size: 24px;
+				font-weight: 600;
+				margin-bottom: 8px;
+			}
+			h4 {
+				font-size: 16px;
+				color: #4b5563;
+				font-weight: normal;
+				margin-top: 0;
+				margin-bottom: 24px;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 16px;
+			}
+			th,
+			td {
+				border: 1px solid #e5e7eb;
+				padding: 10px 12px;
+				text-align: left;
+			}
+			th {
+				background-color: #f9fafb;
+				font-weight: 600;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="w-full flex flex-row justify-start">
+			<h1 class="text-2xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Form Submission for {{.Name}}</h1>
+		</div>
+		<section>
+			<h4 class="flex flex-row text-center w-full text-lg">Received: {{.Received}}</h4>
+			<table>
+				<thead>
+					<tr>
+						<th>Input</th>
+						<th>Response</th>
+					</tr>
+				</thead>
+				<tbody>
+					{{range $key, $value := .Payload}}
+					<tr>
+						<td>{{$key}}</td>
+						<td>{{$value}}</td>
+					</tr>
+					{{end}}
+				</tbody>
+			</table>
+		</section>
+	</body>
+</html>

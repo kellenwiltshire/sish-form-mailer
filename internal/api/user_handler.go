@@ -8,9 +8,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/kellenwiltshire/sish-form-mailer/internal/middleware"
 	"github.com/kellenwiltshire/sish-form-mailer/internal/store"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/tokens"
 	"github.com/kellenwiltshire/sish-form-mailer/internal/util"
 )
 
@@ -22,12 +25,14 @@ type registerUserRequest struct {
 
 type UserHandler struct {
 	userStore store.UserStore
+	formStore store.FormStore
 	logger    *log.Logger
 }
 
-func NewUserHandler(userStore store.UserStore, logger *log.Logger) *UserHandler {
+func NewUserHandler(userStore store.UserStore, formStore store.FormStore, logger *log.Logger) *UserHandler {
 	return &UserHandler{
 		userStore: userStore,
+		formStore: formStore,
 		logger:    logger,
 	}
 }
@@ -109,7 +114,82 @@ func (h *UserHandler) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	var updateUser struct {
 		Email    *string `json:"email"`
-		Role     *string `json:"role"` // TODO update this so that non-admin can't change their role...
+		Password *string `json:"password"`
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&updateUser)
+	if err != nil {
+		h.logger.Printf("ERROR: decodingUpdateRequest: %v", err)
+		util.WriteJSON(w, http.StatusBadRequest, util.Envelope{"error": "invalid request payload"})
+		return
+	}
+
+	if updateUser.Email != nil {
+		existingUser.Email = *updateUser.Email
+	}
+
+	if updateUser.Password != nil {
+		err = existingUser.PasswordHash.Set(*updateUser.Password)
+		if err != nil {
+			h.logger.Printf("ERROR: hashing password %v", err)
+			util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal server error"})
+			return
+		}
+	}
+
+	err = h.userStore.UpdateUser(existingUser)
+	if err != nil {
+		h.logger.Printf("ERROR: updatingUser: %v", err)
+		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal server error"})
+		return
+	}
+
+	util.WriteJSON(w, http.StatusOK, util.Envelope{"user": existingUser.Id})
+}
+
+func (h *UserHandler) HandleAdminUpdateUser(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
+	userId := chi.URLParam(r, "id")
+	if userId == "" {
+		h.logger.Panicf("Error: decodeParam %v", userId)
+		util.WriteJSON(w, http.StatusBadRequest, util.Envelope{"error": "invalid id"})
+		return
+	}
+
+	id, err := strconv.ParseInt(userId, 10, 64)
+
+	existingUser, err := h.userStore.GetUser((id))
+	if err != nil {
+		h.logger.Printf("ERROR: GetUser: %v", err)
+		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal server error"})
+		return
+	}
+
+	if existingUser == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	if user.Role != tokens.ScopeSuper {
+		if user.Role == existingUser.Role {
+			util.WriteJSON(w, http.StatusUnauthorized, util.Envelope{"error": "cannot modify user of same role"})
+			return
+		}
+	}
+
+	if user.Role == tokens.ScopeAuth {
+		util.WriteJSON(w, http.StatusUnauthorized, util.Envelope{"error": "cannot modify user"})
+		return
+	}
+
+	if user.Role == tokens.ScopeAdmin && existingUser.Role == tokens.ScopeSuper {
+		util.WriteJSON(w, http.StatusUnauthorized, util.Envelope{"error": "cannot modify user"})
+		return
+	}
+
+	var updateUser struct {
+		Email    *string `json:"email"`
+		Role     *string `json:"role"`
 		Password *string `json:"password"`
 	}
 
@@ -148,10 +228,40 @@ func (h *UserHandler) HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
 	userId, err := util.ReadIDParam(r)
 	if err != nil {
 		h.logger.Printf("Error: ReadParamId: %v", err)
 		util.WriteJSON(w, http.StatusBadRequest, util.Envelope{"error": "invalid user id"})
+		return
+	}
+
+	existingUser, err := h.userStore.GetUser((userId))
+	if err != nil {
+		h.logger.Printf("ERROR: GetUser: %v", err)
+		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal server error"})
+		return
+	}
+
+	if existingUser == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	if user.Role != tokens.ScopeSuper {
+		if user.Role == existingUser.Role {
+			util.WriteJSON(w, http.StatusUnauthorized, util.Envelope{"error": "cannot delete user of same role"})
+			return
+		}
+	}
+
+	if user.Role == tokens.ScopeAuth {
+		util.WriteJSON(w, http.StatusUnauthorized, util.Envelope{"error": "cannot delete user"})
+		return
+	}
+
+	if user.Role == tokens.ScopeAdmin && existingUser.Role == tokens.ScopeSuper {
+		util.WriteJSON(w, http.StatusUnauthorized, util.Envelope{"error": "cannot delete user"})
 		return
 	}
 
@@ -176,6 +286,7 @@ func (h *UserHandler) HandleGetAllUsers(w http.ResponseWriter, r *http.Request) 
 		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "Error getting all users"})
 		return
 	}
+
 	util.WriteJSON(w, http.StatusOK, util.Envelope{"users": users})
 }
 

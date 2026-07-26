@@ -50,7 +50,7 @@ func Routes(app *app.Application) *chi.Mux {
 		// Admin User Routes
 		r.Get("/api/admin/getUsers", app.AuthMiddleware.RequireAdmin(app.UserHandler.HandleGetAllUsers))
 		r.Post("/api/admin/createUser", app.AuthMiddleware.RequireAdmin(app.UserHandler.HandleCreateUser))
-		r.Put("/api/admin/editUser/{id}", app.AuthMiddleware.RequireAdmin(app.UserHandler.HandleCreateUser))
+		r.Put("/api/admin/editUser/{id}", app.AuthMiddleware.RequireAdmin(app.UserHandler.HandleAdminUpdateUser))
 		r.Delete("/api/admin/deleteUser/{id}", app.AuthMiddleware.RequireAdmin(app.UserHandler.HandleDeleteUser))
 
 	})
