@@ -33,7 +33,7 @@ func GetUser(r *http.Request) *store.User {
 func (um *UserMiddleware) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		c, err := r.Cookie("sish-form-mailer_auth")
+		c, err := r.Cookie("sish-form-mailer-auth")
 		if err != nil {
 			if err != http.ErrNoCookie {
 				util.WriteJSON(w, http.StatusUnauthorized, util.Envelope{"error": "no token received"})
@@ -77,7 +77,7 @@ func (um *UserMiddleware) RequireUser(next http.HandlerFunc) http.HandlerFunc {
 func (um *UserMiddleware) AuthenticateAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		c, err := r.Cookie("sish-form-mailer_auth")
+		c, err := r.Cookie("sish-form-mailer-auth")
 		if err != nil {
 			if err == http.ErrNoCookie {
 				util.WriteJSON(w, http.StatusUnauthorized, util.Envelope{"error": "token expired or invalid"})

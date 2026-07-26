@@ -68,10 +68,6 @@ func (l *PostgresLockoutStore) Get(email string) (*Lockout, error) {
 
 	err := l.db.QueryRow(query, email).Scan(&lockout.Id, &lockout.Email, &lockout.NumAttempts, &lockout.Expiry)
 
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
 	if err != nil {
 		return nil, err
 	}

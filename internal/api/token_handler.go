@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -47,7 +48,7 @@ func (h *TokenHandler) HandleCreateToken(w http.ResponseWriter, r *http.Request)
 	// First check to see if this user email is already locked out
 
 	lockout, err := h.lockoutStore.Get(req.Email)
-	if err != nil {
+	if err != sql.ErrNoRows {
 		h.logger.Printf("ERROR: getLockout: %v", err)
 		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal server error"})
 		return
@@ -91,7 +92,7 @@ func (h *TokenHandler) HandleCreateToken(w http.ResponseWriter, r *http.Request)
 
 	var scope string
 
-	if user.Role == tokens.ScopeAdmin {
+	if user.Role == tokens.ScopeAdmin || user.Role == tokens.ScopeSuper {
 		scope = tokens.ScopeAdmin
 	} else {
 		scope = tokens.ScopeAuth
@@ -100,8 +101,10 @@ func (h *TokenHandler) HandleCreateToken(w http.ResponseWriter, r *http.Request)
 	ttl := 24 * time.Hour
 
 	if req.Remember {
-		ttl = ttl * 30
+		ttl = 30 * 24 * time.Hour
 	}
+
+	h.logger.Printf("Scope: %v\n", scope)
 
 	token, err := h.tokenStore.CreateNewToken(user.Id, ttl, scope)
 	if err != nil {

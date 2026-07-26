@@ -47,6 +47,7 @@ type User struct {
 	PasswordHash password `json:"-"`
 	Role         string   `json:"role"`
 	CreatedAt    string   `json:"created_at"`
+	NumForms     int      `json:"num_forms"`
 }
 
 var AnonymousUser = &User{} // EVERYONE WHO IS NOT LOGGED IN
@@ -73,8 +74,8 @@ type UserStore interface {
 	DeleteUser(id int64) error
 	GetAllUsers() ([]User, error)
 	GetNumberSuperAdminUsers() (*int64, error)
-	GetUserToken(plaintextPassword string) (*User, error)
-	GetAdminToken(plaintextPassword string) (*User, error)
+	GetUserToken(token_hash string) (*User, error)
+	GetAdminToken(token_hash string) (*User, error)
 	GetSuperAdmin() (*User, error)
 	UpdateSuperAdmin(user *User) error
 }
@@ -185,7 +186,10 @@ func (s *PostgresUserStore) DeleteUser(id int64) error {
 
 func (s *PostgresUserStore) GetAllUsers() ([]User, error) {
 	query := `
-		SELECT id, email, role, created_at FROM users
+		SELECT u.id, u.email, u.role, u.created_at, COUNT(f.id) AS num_forms
+		FROM users u
+		LEFT JOIN forms f ON u.id = f.user_id
+		GROUP BY u.id;
 	`
 
 	rows, err := s.db.Query(query)
@@ -196,7 +200,7 @@ func (s *PostgresUserStore) GetAllUsers() ([]User, error) {
 	var users []User
 	for rows.Next() {
 		var user User
-		err := rows.Scan(&user.Id, &user.Email, &user.Role, &user.CreatedAt)
+		err := rows.Scan(&user.Id, &user.Email, &user.Role, &user.CreatedAt, &user.NumForms)
 		if err != nil {
 			return nil, err
 		}
@@ -303,6 +307,10 @@ func (s *PostgresUserStore) GetAdminToken(token_hash string) (*User, error) {
 		&user.CreatedAt,
 		&user.Role,
 	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 
 	if err != nil {
 		return nil, err

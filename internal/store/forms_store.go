@@ -29,6 +29,7 @@ type FormStore interface {
 	DeleteForm(form_id string, user_id int64) error
 	GetAllFormsForUser(user_id int64) ([]Form, error)
 	GetFormInfoForEmail(form_id string) (*Form, error)
+	GetNumberOfFormsForUser(user_id int64) (int64, error)
 }
 
 func (s *PostgresFormStore) CreateForm(form *Form) error {
@@ -143,4 +144,19 @@ func (s *PostgresFormStore) GetFormInfoForEmail(form_id string) (*Form, error) {
 	}
 
 	return form, nil
+}
+
+func (s *PostgresFormStore) GetNumberOfFormsForUser(user_id int64) (int64, error) {
+	query := `
+		SELECT COUNT(*) as count FROM forms WHERE user_id = $1
+	`
+
+	var count int64
+
+	err := s.db.QueryRow(query, user_id).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

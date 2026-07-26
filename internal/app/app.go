@@ -49,7 +49,7 @@ func NewApplication() (*Application, error) {
 	tokenStore := store.NewPostgresTokenStore(pgDb)
 	lockoutStore := store.NewPostgresLockoutStore(pgDb)
 
-	userHandler := api.NewUserHandler(userStore, logger)
+	userHandler := api.NewUserHandler(userStore, formStore, logger)
 	formHandler := api.NewFormHandler(formStore, logger)
 	submissionsHandler := api.NewSubmissionHandler(submissionsStore, logger)
 	tokenHandler := api.NewTokenHandler(tokenStore, userStore, lockoutStore, logger)
