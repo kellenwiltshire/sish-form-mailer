@@ -4,4 +4,5 @@ export type User = {
 	id: number
 	role: 'admin' | 'user'
 	password?: string
+	num_forms: number
 }

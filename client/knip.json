@@ -1,0 +1,7 @@
+{
+	"ignoreDependencies": ["husky", "@tailwindcss/vite"],
+	"ignoreBinaries": ["eslint"],
+	"rules": {
+		"devDependencies": "off"
+	}
+}

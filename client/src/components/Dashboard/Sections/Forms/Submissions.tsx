@@ -4,7 +4,7 @@ import useSWR from 'swr'
 import FormInfo from './FormInfo'
 import SubmissionsTable from './SubmissionsTable'
 
-export type FormResponse = {
+type FormResponse = {
 	form: Form
 }
 

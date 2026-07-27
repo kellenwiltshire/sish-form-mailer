@@ -73,6 +73,12 @@ const UserTable = () => {
 									scope='col'
 									className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900'
 								>
+									Number of Forms
+								</th>
+								<th
+									scope='col'
+									className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900'
+								>
 									Created
 								</th>
 								<th scope='col' className='py-3.5 pr-4 pl-3'>
@@ -93,6 +99,9 @@ const UserTable = () => {
 										</td>
 										<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
 											{user.role}
+										</td>
+										<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
+											{user.num_forms}
 										</td>
 										<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
 											{dayjs(user.created_at).format('DD-MMM-YYYY')}
