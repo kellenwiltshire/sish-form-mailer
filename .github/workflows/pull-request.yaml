@@ -6,8 +6,44 @@ on:
 
 jobs:
   build:
+    name: Build Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: make build-image
+
+  check-frontend:
+    name: Frontend Checks (Lint, Format, Knip)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - run: make build-image
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('client/bun.lockb', 'client/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: client
+
+      - name: Lint frontend
+        run: bun run lint:merge
+        working-directory: client
+
+      - name: Format check frontend
+        run: bun run format:merge
+        working-directory: client
+
+      - name: Knip check frontend
+        run: bun run knip
+        working-directory: client

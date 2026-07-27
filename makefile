@@ -11,6 +11,9 @@ run:
 build:
 	go build -o ./sish-form-mailer main.go
 
+commit:
+	go build -o NUL
+
 build-image:
 	docker buildx build \
 		--platform "linux/amd64" \
