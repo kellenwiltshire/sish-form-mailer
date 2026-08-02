@@ -41,6 +41,7 @@ const DeleteFormModal = () => {
 			})
 			.finally(() => {
 				mutate('/api/forms')
+				mutate(`/api/forms/${form.id}`)
 				dispatch(updateSelectedForm(null))
 				dispatch(updateDeleteFormModalOpen(false))
 			})

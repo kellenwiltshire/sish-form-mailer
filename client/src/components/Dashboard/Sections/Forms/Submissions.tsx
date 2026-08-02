@@ -24,9 +24,12 @@ const Submissions = ({ formId }: SubmissionsProps) => {
 
 	const { form } = formData
 
+	if (!form) {
+		return null
+	}
 	return (
 		<div className='flex flex-col gap-4 divide-y divide-gray-200'>
-			<FormInfo form={form} />
+			{form && <FormInfo form={form} />}
 			<div className='flex flex-col gap-4'>
 				<SubmissionsTable formId={formId} />
 			</div>

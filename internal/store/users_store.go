@@ -41,6 +41,12 @@ func (p *password) Matches(plaintextPassword string) (bool, error) {
 	return true, nil
 }
 
+const (
+	ScopeAuth  = "user"
+	ScopeAdmin = "admin"
+	ScopeSuper = "super_admin"
+)
+
 type User struct {
 	Id           int      `json:"id"`
 	Email        string   `json:"email"`
