@@ -104,8 +104,6 @@ func (h *TokenHandler) HandleCreateToken(w http.ResponseWriter, r *http.Request)
 		ttl = 30 * 24 * time.Hour
 	}
 
-	h.logger.Printf("Scope: %v\n", scope)
-
 	token, err := h.tokenStore.CreateNewToken(user.Id, ttl, scope)
 	if err != nil {
 		h.logger.Printf("Error: Creating Token %v", err)

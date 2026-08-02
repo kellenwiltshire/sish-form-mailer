@@ -308,7 +308,7 @@ func (h *UserHandler) HandleCreateAdminUser() error {
 
 		user := &store.User{
 			Email: "admin@email.com",
-			Role:  "super_admin",
+			Role:  store.ScopeSuper,
 		}
 
 		err = user.PasswordHash.Set(adminPass)

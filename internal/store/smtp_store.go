@@ -222,9 +222,6 @@ func (s *PostgresSmtpStore) GetSmtpEmailSettings(userID int64) (*Smtp, string, e
 		&smtp.RecipientEmail,
 		&smtp.SenderEmail,
 	)
-	if err == sql.ErrNoRows {
-		return nil, "", nil
-	}
 	if err != nil {
 		return nil, "", err
 	}

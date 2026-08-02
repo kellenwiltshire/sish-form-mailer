@@ -1,10 +1,11 @@
-import type { User } from '@/types/User/User'
+import { Scope, type User } from '@/types/User/User'
 import { fetcher } from '@/util/SWR/fetch'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import useSWR from 'swr'
 import dayjs from 'dayjs'
 import EditUser from './EditUser'
+import { useAppSelector } from '@/redux/hooks'
 
 type GetUsersResponse = {
 	users: User[]
@@ -17,6 +18,8 @@ const UserTable = () => {
 		'/api/admin/getUsers',
 		fetcher,
 	)
+
+	const currentUser = useAppSelector((state) => state.user)
 
 	if (!data) return <div>Loading...</div>
 
@@ -42,6 +45,22 @@ const UserTable = () => {
 				console.error(err)
 				toast.error('Error: Please try again later')
 			})
+	}
+
+	const canEditUser = (role: Scope) => {
+		if (currentUser?.role === Scope.SUPER_ADMIN && role !== Scope.SUPER_ADMIN) {
+			return true
+		}
+
+		if (
+			currentUser?.role === Scope.ADMIN &&
+			role !== Scope.SUPER_ADMIN &&
+			role !== Scope.ADMIN
+		) {
+			return true
+		}
+
+		return false
 	}
 
 	return (
@@ -90,57 +109,59 @@ const UserTable = () => {
 							</tr>
 						</thead>
 						<tbody className='divide-y divide-gray-200'>
-							{users
-								.sort((a, b) => a.role.localeCompare(b.role))
-								.map((user) => (
-									<tr key={user.email}>
-										<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
-											{user.email}
-										</td>
-										<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
-											{user.role}
-										</td>
-										<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
-											{user.num_forms}
-										</td>
-										<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
-											{dayjs(user.created_at).format('DD-MMM-YYYY')}
-										</td>
-										{user.role !== 'admin' && (
-											<>
-												<td className='py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap'>
-													<button
-														onClick={() => setEditUser(user)}
-														className='cursor-pointer text-indigo-600 hover:text-indigo-900'
-													>
-														Edit<span className='sr-only'>, {user.email}</span>
-													</button>
-												</td>
-												{confirmation === user.id ? (
+							{users &&
+								users
+									.sort((a, b) => a.role.localeCompare(b.role))
+									.map((user) => (
+										<tr key={user.email}>
+											<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
+												{user.email}
+											</td>
+											<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
+												{user.role}
+											</td>
+											<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
+												{user.num_forms}
+											</td>
+											<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
+												{dayjs(user.created_at).format('DD-MMM-YYYY')}
+											</td>
+											{canEditUser(user.role) && (
+												<>
 													<td className='py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap'>
 														<button
-															onClick={() => handleDeleteUser(user.id)}
-															className='cursor-pointer text-red-600 hover:text-red-900'
+															onClick={() => setEditUser(user)}
+															className='cursor-pointer text-indigo-600 hover:text-indigo-900'
 														>
-															Are you sure?
+															Edit
 															<span className='sr-only'>, {user.email}</span>
 														</button>
 													</td>
-												) : (
-													<td className='py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap'>
-														<button
-															onClick={() => setConfirmation(user.id)}
-															className='cursor-pointer text-red-600 hover:text-red-900'
-														>
-															Delete
-															<span className='sr-only'>, {user.email}</span>
-														</button>
-													</td>
-												)}
-											</>
-										)}
-									</tr>
-								))}
+													{confirmation === user.id ? (
+														<td className='py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap'>
+															<button
+																onClick={() => handleDeleteUser(user.id)}
+																className='cursor-pointer text-red-600 hover:text-red-900'
+															>
+																Are you sure?
+																<span className='sr-only'>, {user.email}</span>
+															</button>
+														</td>
+													) : (
+														<td className='py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap'>
+															<button
+																onClick={() => setConfirmation(user.id)}
+																className='cursor-pointer text-red-600 hover:text-red-900'
+															>
+																Delete
+																<span className='sr-only'>, {user.email}</span>
+															</button>
+														</td>
+													)}
+												</>
+											)}
+										</tr>
+									))}
 						</tbody>
 					</table>
 				</>

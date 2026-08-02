@@ -120,6 +120,7 @@ func (s *SendMailService) SendMail(submission_id string) error {
 func (s *SendMailService) TestSendMail(userId int64, testPayload string) error {
 	smtp, pass, err := s.smtpStore.GetSmtpEmailSettings(int64(userId))
 	if err != nil {
+		s.logger.Printf("Error GetSmtpEmailSettings: %v", err)
 		return err
 	}
 

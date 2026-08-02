@@ -11,6 +11,7 @@
 		"preview": "vite preview",
 		"prepare": "cd .. && husky client/.husky",
 		"format": "prettier --write **/*.{ts,tsx} **/components/**/*.tsx",
+		"format:merge": "prettier",
 		"knip": "knip --production",
 		"tsc": "tsc"
 	},

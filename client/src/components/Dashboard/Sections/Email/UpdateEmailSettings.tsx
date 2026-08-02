@@ -80,7 +80,6 @@ const UpdateEmailSettings = ({
 				id='host'
 				type='text'
 				placeholder={smtp ? smtp.host : 'SMTP Host'}
-				value=''
 				label='SMTP Host'
 				required={smtp === null}
 			/>
@@ -97,7 +96,6 @@ const UpdateEmailSettings = ({
 				id='username'
 				type='text'
 				placeholder={smtp ? smtp.username : 'SMTP Username'}
-				value=''
 				label='SMTP Username'
 				required={smtp === null}
 			/>
@@ -106,7 +104,6 @@ const UpdateEmailSettings = ({
 				id='password'
 				type='text'
 				placeholder='SMTP Password'
-				value=''
 				label='SMTP Password'
 				required={smtp === null}
 			/>
@@ -120,7 +117,6 @@ const UpdateEmailSettings = ({
 				id='sender_email'
 				type='text'
 				placeholder={smtp ? smtp.sender_email : 'SMTP Sender Email'}
-				value=''
 				label='SMTP Sender Email'
 				required={smtp === null}
 			/>
@@ -129,7 +125,6 @@ const UpdateEmailSettings = ({
 				id='recipient_email'
 				type='text'
 				placeholder={smtp ? smtp.recipient_email : 'SMTP Recipient Email'}
-				value=''
 				label='SMTP Recipient Email'
 				required={smtp === null}
 			/>
