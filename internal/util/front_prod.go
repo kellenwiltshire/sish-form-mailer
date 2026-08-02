@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// /go:embed dist/*
+// go:embed dist/*
 var FrontendFS embed.FS
 
 func Front(r chi.Router) {
