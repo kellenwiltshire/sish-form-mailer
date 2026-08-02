@@ -12,11 +12,11 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// go:embed dist/*
+//go:embed all:dist
 var FrontendFS embed.FS
 
 func Front(r chi.Router) {
-	// Trim the "client/dist" prefix so the file server reads directly from the root of dist
+	// Sub into 'dist' so the root of staticFiles is the contents of the dist folder
 	staticFiles, err := fs.Sub(FrontendFS, "dist")
 	if err != nil {
 		log.Fatal("Failed to create sub-filesystem:", err)
@@ -24,7 +24,6 @@ func Front(r chi.Router) {
 
 	fileServer := http.FileServer(http.FS(staticFiles))
 
-	// Use "/*" so Chi routes /assets/index.js, /favicon.ico, etc. to the fileServer
 	r.Handle("/*", fileServer)
 
 	log.Println("Serving production static files from embedded filesystem")
