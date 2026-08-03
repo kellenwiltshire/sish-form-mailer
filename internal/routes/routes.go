@@ -1,16 +1,32 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/kellenwiltshire/sish-form-mailer/internal/app"
 	"github.com/kellenwiltshire/sish-form-mailer/internal/util"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 func Routes(app *app.Application) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+
+	r.Use(cors.Handler(cors.Options{
+		AllowOriginFunc: func(r *http.Request, origin string) bool {
+			return app.OriginHandler.HandleGetOriginExists(origin, app.AppCache)
+		},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders: []string{
+			"Accept",
+			"Authorization",
+			"Content-Type",
+		},
+		AllowCredentials: true,
+	}))
 
 	r.Group(func(r chi.Router) {
 		r.Use(app.AuthMiddleware.Authenticate)
@@ -39,6 +55,11 @@ func Routes(app *app.Application) *chi.Mux {
 		r.Put("/api/email-settings", app.AuthMiddleware.RequireUser(app.SMTPHandler.HandleUpdateSmtpSettings))
 		r.Delete("/api/email-settings", app.AuthMiddleware.RequireUser(app.SMTPHandler.HandleDeleteSmtpSetting))
 		r.Get("/api/email-settings/test", app.AuthMiddleware.RequireUser(app.SMTPHandler.HandleTestEmail))
+
+		// Origins
+		r.Get("/api/origins", app.AuthMiddleware.RequireUser(app.OriginHandler.HandleGetOrigins))
+		r.Post("/api/origins", app.AuthMiddleware.RequireUser(app.OriginHandler.HandleCreateOrigin))
+		r.Delete("/api/origins/{origin_id}", app.AuthMiddleware.RequireUser(app.OriginHandler.HandleDeleteOrigin))
 
 		r.Get("/api/auth/logout", app.TokenHandler.HandleDeleteTokens)
 	})

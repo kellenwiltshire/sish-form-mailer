@@ -1,7 +1,7 @@
 export enum Scope {
 	ADMIN = 'admin',
 	SUPER_ADMIN = 'super_admin',
-	user = 'user',
+	USER = 'user',
 }
 
 export type User = {

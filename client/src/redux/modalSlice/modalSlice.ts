@@ -4,6 +4,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 type InitialState = {
 	addUserModalOpen: boolean
 	addFormModalOpen: boolean
+	addOriginModalOpen: boolean
 	deleteFormModalOpen: boolean
 	selectedForm: Form | null
 }
@@ -11,6 +12,7 @@ type InitialState = {
 const initialState: InitialState = {
 	addUserModalOpen: false,
 	addFormModalOpen: false,
+	addOriginModalOpen: false,
 	deleteFormModalOpen: false,
 	selectedForm: null,
 }
@@ -25,6 +27,9 @@ const modalSlice = createSlice({
 		updateAddFormModalOpen(state, action: PayloadAction<boolean>) {
 			state.addFormModalOpen = action.payload
 		},
+		updateAddOriginModalOpen(state, action: PayloadAction<boolean>) {
+			state.addOriginModalOpen = action.payload
+		},
 		updateDeleteFormModalOpen(state, action: PayloadAction<boolean>) {
 			state.deleteFormModalOpen = action.payload
 		},
@@ -37,6 +42,7 @@ const modalSlice = createSlice({
 export const {
 	updateAddUserModalOpen,
 	updateAddFormModalOpen,
+	updateAddOriginModalOpen,
 	updateDeleteFormModalOpen,
 	updateSelectedForm,
 } = modalSlice.actions
