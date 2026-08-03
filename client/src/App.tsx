@@ -11,7 +11,7 @@ function App() {
 
 		const rememberMe = (remember && remember.valueOf() === 'on') || false
 
-		fetch('http://localhost:8080/api/auth/login', {
+		fetch('/api/auth/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
