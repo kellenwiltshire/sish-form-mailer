@@ -6,6 +6,7 @@ import {
 	TransitionChild,
 } from '@headlessui/react'
 import {
+	ArrowsRightLeftIcon,
 	Cog6ToothIcon,
 	GlobeAltIcon,
 	PaperClipIcon,
@@ -16,26 +17,53 @@ import { Bars3Icon } from '@heroicons/react/20/solid'
 import Forms from './Sections/Forms/FormsPage'
 import EmailPage from './Sections/Email/EmailPage'
 import { classNames } from '@/util/Classnames/Classnames'
-import AdminPage from './Sections/Admin/AdminPage'
 import useSWR from 'swr'
 import { fetcher } from '@/util/SWR/fetch'
 import { useAppDispatch } from '@/redux/hooks'
 import { updateUser } from '@/redux/userSlice/userSlice'
-import type { User } from '@/types/User/User'
+import { Scope, type User } from '@/types/User/User'
 import SettingsPage from './Sections/Settings/SettingsPage'
 import FormsPage from './Sections/Forms/FormsPage'
 import Button from '../UI/Button'
 import { useNavigate } from 'react-router'
+import OriginsPage from './Sections/Origins/OriginPage'
+import AdminPage from './Sections/Admin/AdminPage'
 
 type GetUsersResponse = {
 	user: User
 }
 
 const navigation = [
-	{ name: 'Form', id: 'form', icon: PaperClipIcon, access: 'user' },
-	{ name: 'Email Settings', id: 'email', icon: SignalIcon, access: 'user' },
-	{ name: 'Admin', id: 'admin', icon: GlobeAltIcon, access: 'admin' },
-	{ name: 'Settings', id: 'settings', icon: Cog6ToothIcon, access: 'user' },
+	{
+		name: 'Form',
+		id: 'form',
+		icon: PaperClipIcon,
+		access: [Scope.USER, Scope.ADMIN, Scope.SUPER_ADMIN],
+	},
+	{
+		name: 'Email Settings',
+		id: 'email',
+		icon: SignalIcon,
+		access: [Scope.USER, Scope.ADMIN, Scope.SUPER_ADMIN],
+	},
+	{
+		name: 'Allowed Origins',
+		id: 'origins',
+		icon: ArrowsRightLeftIcon,
+		access: [Scope.USER, Scope.ADMIN, Scope.SUPER_ADMIN],
+	},
+	{
+		name: 'Admin',
+		id: 'admin',
+		icon: GlobeAltIcon,
+		access: [Scope.ADMIN, Scope.SUPER_ADMIN],
+	},
+	{
+		name: 'Settings',
+		id: 'settings',
+		icon: Cog6ToothIcon,
+		access: [Scope.USER, Scope.ADMIN, Scope.SUPER_ADMIN],
+	},
 ]
 
 const Dashboard = () => {
@@ -61,6 +89,8 @@ const Dashboard = () => {
 				return <FormsPage />
 			case 'email':
 				return <EmailPage />
+			case 'origins':
+				return <OriginsPage />
 			case 'admin':
 				return <AdminPage />
 			case 'settings':
@@ -84,6 +114,8 @@ const Dashboard = () => {
 				console.error(err)
 			})
 	}
+
+	if (!data) return null
 
 	return (
 		<>
@@ -133,10 +165,7 @@ const Dashboard = () => {
 										<li>
 											<ul role='list' className='-mx-2 space-y-1'>
 												{navigation.map((item) => {
-													if (
-														item.access === 'admin' &&
-														data?.user.role !== 'admin'
-													) {
+													if (!item.access.includes(data?.user.role)) {
 														return null
 													}
 													return (
@@ -188,30 +217,35 @@ const Dashboard = () => {
 							<ul role='list' className='flex flex-1 flex-col gap-y-7'>
 								<li>
 									<ul role='list' className='-mx-2 space-y-1'>
-										{navigation.map((item) => (
-											<li key={item.name}>
-												<button
-													onClick={() => setCurrentView(item.id)}
-													className={classNames(
-														item.id === currentView
-															? 'bg-gray-100 text-indigo-600'
-															: 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600',
-														'group flex w-full cursor-pointer gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
-													)}
-												>
-													<item.icon
-														aria-hidden='true'
+										{navigation.map((item) => {
+											if (!item.access.includes(data?.user.role)) {
+												return null
+											}
+											return (
+												<li key={item.name}>
+													<button
+														onClick={() => setCurrentView(item.id)}
 														className={classNames(
 															item.id === currentView
-																? 'text-indigo-600'
-																: 'text-gray-400 group-hover:text-indigo-600',
-															'size-6 shrink-0',
+																? 'bg-gray-100 text-indigo-600'
+																: 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600',
+															'group flex w-full cursor-pointer gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
 														)}
-													/>
-													{item.name}
-												</button>
-											</li>
-										))}
+													>
+														<item.icon
+															aria-hidden='true'
+															className={classNames(
+																item.id === currentView
+																	? 'text-indigo-600'
+																	: 'text-gray-400 group-hover:text-indigo-600',
+																'size-6 shrink-0',
+															)}
+														/>
+														{item.name}
+													</button>
+												</li>
+											)
+										})}
 									</ul>
 								</li>
 							</ul>

@@ -11,6 +11,7 @@ import (
 	"github.com/kellenwiltshire/sish-form-mailer/internal/service"
 	"github.com/kellenwiltshire/sish-form-mailer/internal/store"
 	"github.com/kellenwiltshire/sish-form-mailer/migrations"
+	"github.com/patrickmn/go-cache"
 )
 
 type Application struct {
@@ -21,12 +22,14 @@ type Application struct {
 	SMTPHandler        *api.SmtpHandler
 	SubmissionsHandler *api.SubmissionHandler
 	TokenHandler       *api.TokenHandler
+	OriginHandler      *api.OriginHandler
 
 	SendMailService *service.SendMailService
 
 	AuthMiddleware         middleware.UserMiddleware
 	RateLimiter            *middleware.LimiterMiddleware
 	RateLimiterSubmissions *middleware.LimiterMiddleware
+	AppCache               *cache.Cache
 }
 
 func NewApplication() (*Application, error) {
@@ -48,11 +51,13 @@ func NewApplication() (*Application, error) {
 	submissionsStore := store.NewPostgresSubmissionsStore(pgDb)
 	tokenStore := store.NewPostgresTokenStore(pgDb)
 	lockoutStore := store.NewPostgresLockoutStore(pgDb)
+	originStore := store.NewPostgresOriginStore(pgDb)
 
 	userHandler := api.NewUserHandler(userStore, formStore, logger)
 	formHandler := api.NewFormHandler(formStore, logger)
 	submissionsHandler := api.NewSubmissionHandler(submissionsStore, logger)
 	tokenHandler := api.NewTokenHandler(tokenStore, userStore, lockoutStore, logger)
+	originHandler := api.NewOriginHandler(originStore, logger)
 
 	sendMailService := service.NewSendMailService(formStore, submissionsStore, smtpStore, logger)
 	smtpHandler := api.NewSmtpHandler(smtpStore, *sendMailService, logger)
@@ -62,6 +67,8 @@ func NewApplication() (*Application, error) {
 	rateLimiter := middleware.NewLimiterMiddleware(logger, 10, 1, time.Second)
 	rateLimiterSubmissions := middleware.NewLimiterMiddleware(logger, 2, 1, 12*time.Hour)
 
+	appCache := cache.New(24*time.Hour, 6*time.Hour)
+
 	app := &Application{
 		Logger:             logger,
 		Db:                 pgDb,
@@ -70,12 +77,14 @@ func NewApplication() (*Application, error) {
 		SMTPHandler:        smtpHandler,
 		SubmissionsHandler: submissionsHandler,
 		TokenHandler:       tokenHandler,
+		OriginHandler:      originHandler,
 
 		SendMailService: sendMailService,
 
 		AuthMiddleware:         AuthMiddleware,
 		RateLimiter:            rateLimiter,
 		RateLimiterSubmissions: rateLimiterSubmissions,
+		AppCache:               appCache,
 	}
 
 	return app, nil
