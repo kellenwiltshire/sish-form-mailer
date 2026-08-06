@@ -24,7 +24,7 @@ const Button = ({ children, variant = 'standard', ...props }: ButtonProps) => {
 			{...props}
 			className={clsx(
 				getStyling(),
-				'disabled:bg-disabled disabled:cursor-not-allowed',
+				'disabled:bg-disabled min-w-full disabled:cursor-not-allowed',
 			)}
 		>
 			{children}

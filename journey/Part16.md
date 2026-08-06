@@ -9,3 +9,5 @@ For the CORS issue, I've added in `go-chi/cors` and setup a CORS handler. Now ev
 I've created a new table for this, and I'll have to update the UI as well to make sure that Users can add allowed origins for their forms to receive responses. I'm also use `go-cache` to make sure that DB isn't hit on every singe request. I did need some help from AI on this part, but at this point I want this project done.
 
 The UI update for this will be pretty much a copy/paste of the Admin stuff with small tweaks, to keep it simple. User can only add/view/delete their origins.
+
+Now I can also work on fixing some weird UI issues, adding the logo, and get things a little more ironed out for a Beta release. I'd also like to do some general refactoring. Before the Prod release too I need to work on some documentation, but I may let the `clanker` handle that.
