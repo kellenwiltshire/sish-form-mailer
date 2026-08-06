@@ -32,15 +32,15 @@ function App() {
 	return (
 		<main className='flex min-h-screen items-center justify-center'>
 			<div className='flex min-h-full w-full flex-col justify-center py-12 sm:px-6 lg:px-8'>
-				<div className='sm:mx-auto sm:w-full sm:max-w-md'>
-					SiSH Logo
-					<h2 className='mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900'>
-						Sign in to Form Mailer
-					</h2>
-				</div>
-
 				<div className='mt-10 sm:mx-auto sm:w-full sm:max-w-120'>
 					<div className='bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12'>
+						<div className='flex flex-col items-center justify-center sm:mx-auto sm:w-full sm:max-w-md'>
+							<img src='/sish-logo.webp' alt='logo' className='h-auto w-64' />
+							<h2 className='text-center text-2xl/9 font-bold tracking-tight text-gray-900'>
+								SiSH Form Mailer
+							</h2>
+							<p className='text-center text-lg text-black'>Sign In</p>
+						</div>
 						{invalid && (
 							<h4 className='text-center text-red-400'>Invalid Credentials</h4>
 						)}

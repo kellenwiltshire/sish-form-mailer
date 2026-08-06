@@ -48,10 +48,12 @@ func (h *TokenHandler) HandleCreateToken(w http.ResponseWriter, r *http.Request)
 	// First check to see if this user email is already locked out
 
 	lockout, err := h.lockoutStore.Get(req.Email)
-	if err != sql.ErrNoRows {
-		h.logger.Printf("ERROR: getLockout: %v", err)
-		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal server error"})
-		return
+	if err != nil {
+		if err != sql.ErrNoRows {
+			h.logger.Printf("ERROR: getLockout: %v", err)
+			util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal server error"})
+			return
+		}
 	}
 
 	if lockout != nil {

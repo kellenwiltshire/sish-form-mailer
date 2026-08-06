@@ -6,6 +6,7 @@ import Button from '@/components/UI/Button'
 import { useState } from 'react'
 import UpdateEmailSettings from './UpdateEmailSettings'
 import PageLayout from '@/Layout/PageLayout'
+import { toast } from 'react-toastify'
 
 type EmailResponse = {
 	smtp: Email | null
@@ -13,7 +14,7 @@ type EmailResponse = {
 
 const EmailPage = () => {
 	const [updateSettingsOpen, setUpdateSettingsOpen] = useState(false)
-	const { data, error } = useSWR<EmailResponse, Error>(
+	const { data, error, mutate } = useSWR<EmailResponse, Error>(
 		'/api/email-settings',
 		fetcher,
 	)
@@ -22,6 +23,26 @@ const EmailPage = () => {
 
 	if (error) return <div>error</div>
 
+	const handleDeleteSMTP = () => {
+		fetch(`/api/email-settings`, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+			.then((res) => {
+				if (!res.ok) {
+					throw new Error()
+				}
+				toast.success('Email Settings Deleted')
+				mutate()
+			})
+			.catch((err) => {
+				console.error(err)
+				toast.error('Error: Please try again later')
+			})
+	}
+
 	const { smtp } = data
 
 	return (
@@ -29,7 +50,10 @@ const EmailPage = () => {
 			title='SMTP Settings'
 			button={
 				smtp ? (
-					<div>
+					<div className='flex flex-row justify-end gap-3'>
+						<Button variant='ghost' onClick={() => handleDeleteSMTP()}>
+							Delete
+						</Button>
 						<Button onClick={() => setUpdateSettingsOpen((p) => !p)}>
 							{updateSettingsOpen ? 'Cancel' : 'Update Settings'}
 						</Button>

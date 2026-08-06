@@ -227,12 +227,14 @@ func (h *SmtpHandler) HandleDeleteSmtpSetting(w http.ResponseWriter, r *http.Req
 
 	err := h.smtpStore.DeleteSmtpSettings(int64(user.Id))
 	if err == sql.ErrNoRows {
-		http.Error(w, "smtp not found", http.StatusNotFound)
+		h.logger.Printf("ERROR: No Rows %v", err)
+		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal server error"})
 		return
 	}
 
 	if err != nil {
-		http.Error(w, "error deleting smtp", http.StatusInternalServerError)
+		h.logger.Printf("ERROR: Cant delete SMTP %v", err)
+		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal server error"})
 		return
 	}
 
