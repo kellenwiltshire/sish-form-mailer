@@ -10,4 +10,6 @@ I've created a new table for this, and I'll have to update the UI as well to mak
 
 The UI update for this will be pretty much a copy/paste of the Admin stuff with small tweaks, to keep it simple. User can only add/view/delete their origins.
 
-Now I can also work on fixing some weird UI issues, adding the logo, and get things a little more ironed out for a Beta release. I'd also like to do some general refactoring. Before the Prod release too I need to work on some documentation, but I may let the `clanker` handle that.
+Now I can also work on fixing some weird UI issues, adding the logo, and get things a little more ironed out for a Beta release. I'd also like to do some general refactoring. Before the prod release too I need to work on some documentation, but I may let the `clanker` handle that.
+
+Aside from the pending Documentation, I think this is looking pretty close to done, at least for a beta release and I can start to hook up some of the client forms I have to use it, even just as a backup for a bit of testing. Then I can have some real world data to work with and see whats going on.
