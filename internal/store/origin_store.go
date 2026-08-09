@@ -3,9 +3,10 @@ package store
 import "database/sql"
 
 type Origin struct {
-	Id     int    `json:"id"`
-	UserId int    `json:"user_id"`
-	Origin string `json:"origin"`
+	Id        int    `json:"id"`
+	UserId    int    `json:"user_id"`
+	Origin    string `json:"origin"`
+	CreatedAt string `json:"created_at"`
 }
 
 type PostgresOriginStore struct {
@@ -41,18 +42,21 @@ func (s *PostgresOriginStore) CreateOrigin(origin *Origin) error {
 
 func (s *PostgresOriginStore) GetOrigins(user_id int64) ([]Origin, error) {
 	query := `
-		SELECT id, user_id, origin FROM origins WHERE user_id = $1
+		SELECT id, user_id, origin, created_at FROM origins WHERE user_id = $1
 	`
 
 	rows, err := s.db.Query(query, user_id)
 	if err != nil {
 		return nil, err
 	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
 
 	var origins []Origin
 	for rows.Next() {
 		var origin Origin
-		err := rows.Scan(&origin.Id, &origin.UserId, &origin.Origin)
+		err := rows.Scan(&origin.Id, &origin.UserId, &origin.Origin, &origin.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
