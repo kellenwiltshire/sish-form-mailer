@@ -19,13 +19,14 @@ func Routes(app *app.Application) *chi.Mux {
 		AllowOriginFunc: func(r *http.Request, origin string) bool {
 			return app.OriginHandler.HandleGetOriginExists(origin, app.AppCache)
 		},
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{
 			"Accept",
 			"Authorization",
 			"Content-Type",
 		},
 		AllowCredentials: true,
+		MaxAge:           300,
 	}))
 
 	r.Group(func(r chi.Router) {
@@ -73,7 +74,6 @@ func Routes(app *app.Application) *chi.Mux {
 		r.Post("/api/admin/createUser", app.AuthMiddleware.RequireAdmin(app.UserHandler.HandleCreateUser))
 		r.Put("/api/admin/editUser/{id}", app.AuthMiddleware.RequireAdmin(app.UserHandler.HandleAdminUpdateUser))
 		r.Delete("/api/admin/deleteUser/{id}", app.AuthMiddleware.RequireAdmin(app.UserHandler.HandleDeleteUser))
-
 	})
 
 	r.Group(func(r chi.Router) {
