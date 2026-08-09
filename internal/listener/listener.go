@@ -1,6 +1,7 @@
 package listener
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -9,6 +10,11 @@ import (
 
 	"github.com/lib/pq"
 )
+
+type NotificationPayload struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
+}
 
 func Listener(app *app.Application) error {
 	host := os.Getenv("DB_HOST")
@@ -55,7 +61,16 @@ func Listener(app *app.Application) error {
 
 	for n := range watcher.Notify {
 		if n != nil {
-			err := app.SendMailService.SendMail(n.Extra)
+			var payload NotificationPayload
+			err := json.Unmarshal([]byte(n.Extra), &payload)
+			if err != nil {
+				app.Logger.Printf("error unmarshalling notification payload")
+				continue
+			}
+			if payload.Status != "received" {
+				continue
+			}
+			err = app.SendMailService.SendMail(payload.ID)
 			if err != nil {
 				app.Logger.Printf("ERROR: SendMailError %v", err)
 			}

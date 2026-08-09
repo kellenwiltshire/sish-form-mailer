@@ -8,6 +8,7 @@ type Submission struct {
 	Payload     string `json:"payload"`
 	SubmittedAt string `json:"submitted_at"`
 	Status      string `json:"status"`
+	ErrorReason string `json:"error_reason"`
 }
 
 type PostgresSubmissionsStore struct {
@@ -31,10 +32,10 @@ type SubmissionsStore interface {
 
 func (s *PostgresSubmissionsStore) CreateSubmission(submission *Submission) error {
 	query := `
-		INSERT INTO form_submissions (form_id, payload) values ($1, $2) RETURNING id
+		INSERT INTO form_submissions (form_id, payload, status, error_reason) values ($1, $2, $3, $4) RETURNING id
 	`
 
-	err := s.db.QueryRow(query, submission.FormId, submission.Payload).Scan(&submission.Id)
+	err := s.db.QueryRow(query, submission.FormId, submission.Payload, submission.Status, submission.ErrorReason).Scan(&submission.Id)
 	if err != nil {
 		return err
 	}
@@ -72,7 +73,6 @@ func (s *PostgresSubmissionsStore) GetFormSubmissionById(submission_id int64) (*
 		return nil, err
 	}
 	return submission, nil
-
 }
 
 func (s *PostgresSubmissionsStore) DeleteSubmission(submission_id int64) error {

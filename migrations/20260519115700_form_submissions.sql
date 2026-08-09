@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS form_submissions (
     form_id VARCHAR(6) NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
     payload JSONB NOT NULL,
     status status_type DEFAULT 'received' NOT NULL,
+    error_reason VARCHAR(255) DEFAULT NULL,
     submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

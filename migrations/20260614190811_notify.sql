@@ -5,7 +5,10 @@ RETURNS trigger AS $$
 BEGIN
     PERFORM pg_notify(
         'form_submissions_inserts',
-        NEW.id::text
+        json_build_object(
+          'id', NEW.id,
+          'status', NEW.status
+        )::text
     );
 
     RETURN NEW;
