@@ -92,9 +92,17 @@ func (h *OriginHandler) HandleDeleteOrigin(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *OriginHandler) HandleGetOriginExists(origin string, appCache *cache.Cache) bool {
-	h.logger.Printf("Checking Origin Cache: %v", origin)
+	h.logger.Printf("Checking Origin Cache: %q", origin)
+
 	if val, found := appCache.Get(origin); found {
-		return val.(bool)
+		allowed, ok := val.(bool)
+		if ok {
+			h.logger.Printf("Origin %q found in cache: %v", origin, allowed)
+			return allowed
+		}
+
+		h.logger.Printf("ERROR: Invalid cached value for origin %q", origin)
+		appCache.Delete(origin)
 	}
 
 	initialOrigin := os.Getenv("INITIAL_ORIGIN")
@@ -102,9 +110,8 @@ func (h *OriginHandler) HandleGetOriginExists(origin string, appCache *cache.Cac
 		h.logger.Println("ERROR: No Origin Provided in Env")
 	}
 
-	appCache.Set(initialOrigin, true, cache.DefaultExpiration)
-
-	if initialOrigin == origin {
+	if origin == initialOrigin {
+		appCache.Set(origin, true, cache.DefaultExpiration)
 		return true
 	}
 
@@ -116,7 +123,7 @@ func (h *OriginHandler) HandleGetOriginExists(origin string, appCache *cache.Cac
 
 	appCache.Set(origin, exists, cache.DefaultExpiration)
 
-	h.logger.Printf("Origin %v exists: %v", origin, exists)
+	h.logger.Printf("Origin %q exists: %v", origin, exists)
 
 	return exists
 }

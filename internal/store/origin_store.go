@@ -94,12 +94,14 @@ func (s *PostgresOriginStore) GetOriginExists(origin string) (bool, error) {
 		SELECT EXISTS(SELECT 1 FROM origins WHERE origin = $1)
 	`
 
-	err := s.db.QueryRow(query, origin)
+	var exists bool
+
+	err := s.db.QueryRow(query, origin).Scan(&exists)
 	if err != nil {
-		return false, err.Err()
+		return false, err
 	}
 
-	return true, nil
+	return exists, nil
 }
 
 func (s *PostgresOriginStore) DeleteOrigin(id string, user_id int64) error {
