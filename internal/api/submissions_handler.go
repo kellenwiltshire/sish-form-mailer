@@ -3,12 +3,12 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/kellenwiltshire/sish-form-mailer/internal/middleware"
+	"github.com/kellenwiltshire/sish-form-mailer/internal/service"
 	"github.com/kellenwiltshire/sish-form-mailer/internal/store"
 	"github.com/kellenwiltshire/sish-form-mailer/internal/util"
 
@@ -17,6 +17,7 @@ import (
 
 type registerSubmissionRequest struct {
 	Payload []byte `json:"payload"`
+	Token   string `json:"token"`
 }
 
 type SubmissionHandler struct {
@@ -38,24 +39,36 @@ func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *htt
 		util.WriteJSON(w, http.StatusBadRequest, util.Envelope{"error": "invalid id"})
 		return
 	}
+	var submissionRequest registerSubmissionRequest
 
-	body, err := io.ReadAll(r.Body)
+	err := json.NewDecoder(r.Body).Decode(&submissionRequest)
 	if err != nil {
-		h.logger.Printf("Error decoding create submission request %v", err)
-		util.WriteJSON(w, http.StatusBadRequest, util.Envelope{"error": "invalid submission payload"})
+		h.logger.Printf("Error decoding create submission request")
+		util.WriteJSON(w, http.StatusBadRequest, util.Envelope{"error": "invalid payload request"})
 		return
 	}
-	defer r.Body.Close()
 
-	if !json.Valid(body) {
+	if !json.Valid(submissionRequest.Payload) {
 		h.logger.Printf("Error invalid json %v", err)
 		util.WriteJSON(w, http.StatusBadRequest, util.Envelope{"error": "invalid submission payload"})
 		return
 	}
 
+	submission_status := "received"
+	var error_status string
+	// Check that the request isn't fraudulent
+	err = service.CreateAssessment(submissionRequest.Token)
+	if err != nil {
+		h.logger.Printf("Error: Recaptcha Assessment %v", err)
+		submission_status = "error"
+		error_status = "failed captcha"
+	}
+
 	submission := &store.Submission{
-		FormId:  idParam,
-		Payload: string(body),
+		FormId:      idParam,
+		Payload:     string(submissionRequest.Payload),
+		Status:      submission_status,
+		ErrorReason: error_status,
 	}
 
 	err = h.submissionsStore.CreateSubmission(submission)
@@ -65,7 +78,7 @@ func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *htt
 		return
 	}
 
-	util.WriteJSON(w, http.StatusCreated, util.Envelope{"submission": submission})
+	util.WriteJSON(w, http.StatusCreated, util.Envelope{"status": "success"})
 }
 
 func (h *SubmissionHandler) HandleGetFormSubmissions(w http.ResponseWriter, r *http.Request) {

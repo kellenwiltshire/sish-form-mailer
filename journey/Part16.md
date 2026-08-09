@@ -13,3 +13,19 @@ The UI update for this will be pretty much a copy/paste of the Admin stuff with 
 Now I can also work on fixing some weird UI issues, adding the logo, and get things a little more ironed out for a Beta release. I'd also like to do some general refactoring. Before the prod release too I need to work on some documentation, but I may let the `clanker` handle that.
 
 Aside from the pending Documentation, I think this is looking pretty close to done, at least for a beta release and I can start to hook up some of the client forms I have to use it, even just as a backup for a bit of testing. Then I can have some real world data to work with and see whats going on.
+
+Before I do that though, I need to setup ReCaptcha on the server side for verification. This will be a couple `.env` variables that will determine if the User is using recatpcha, and then if the recaptcha passes.
+
+Some things to consider:
+
+- How the flow should look for recatpcha
+- How to handle successful challenges
+- How to handle unsuccessful challenges
+
+For the flow, I believe the server should receive the submission -> process recatpcha -> depending on success set a value in a new column -> depending on that value we send the email.
+
+For successful recatpcha, the flow will look very similar to now. The biggest thing I want to try and mitigate here is slowing down the experience on the client side. May have to come up with some interesting new things here.
+
+For the unsuccessful challenges, I don't want to send these through to the User by email, but I do want to track the submissions in case of a false positive. I can still show these submissions in the UI, maybe hidden, with an indicator that the submission failed recatpcha.
+
+Let's get building. First I will modify the tables, then add in a new service to handle actually checking the recaptcha, then update everywhere else, then test it all, best I can.
