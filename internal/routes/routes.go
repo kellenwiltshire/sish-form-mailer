@@ -25,8 +25,7 @@ func Routes(app *app.Application) *chi.Mux {
 			"Authorization",
 			"Content-Type",
 		},
-		AllowCredentials: true,
-		MaxAge:           300,
+		MaxAge: 300,
 	}))
 
 	r.Group(func(r chi.Router) {

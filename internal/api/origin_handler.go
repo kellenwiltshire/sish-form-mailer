@@ -116,5 +116,7 @@ func (h *OriginHandler) HandleGetOriginExists(origin string, appCache *cache.Cac
 
 	appCache.Set(origin, exists, cache.DefaultExpiration)
 
+	h.logger.Printf("Origin %v exists: %v", origin, exists)
+
 	return exists
 }
