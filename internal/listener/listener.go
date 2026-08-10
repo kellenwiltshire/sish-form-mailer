@@ -64,7 +64,11 @@ func Listener(app *app.Application) error {
 			var payload NotificationPayload
 			err := json.Unmarshal([]byte(n.Extra), &payload)
 			if err != nil {
-				app.Logger.Printf("error unmarshalling notification payload")
+				app.Logger.Printf(
+					"error unmarshalling notification payload: %v, payload: %q",
+					err,
+					n.Extra,
+				)
 				continue
 			}
 			if payload.Status != "received" {
