@@ -27,7 +27,7 @@ func CreateAssessment(token string) error {
 	ctx := context.Background()
 	client, err := recaptcha.NewClient(ctx)
 	if err != nil {
-		return fmt.Errorf("Error creating captcha client")
+		return fmt.Errorf("Error creating captcha client %v", err)
 	}
 	defer client.Close()
 
@@ -47,7 +47,7 @@ func CreateAssessment(token string) error {
 
 	response, err := client.CreateAssessment(ctx, request)
 	if err != nil {
-		return fmt.Errorf("Error calling Create Assessment")
+		return fmt.Errorf("Error calling Create Assessment %v", err)
 	}
 
 	// Check that the Token is valid
