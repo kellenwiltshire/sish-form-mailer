@@ -16,8 +16,8 @@ import (
 )
 
 type registerSubmissionRequest struct {
-	Payload []byte `json:"payload"`
-	Token   string `json:"token"`
+	Payload json.RawMessage `json:"payload"`
+	Token   string          `json:"token"`
 }
 
 type SubmissionHandler struct {
@@ -43,7 +43,7 @@ func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *htt
 
 	err := json.NewDecoder(r.Body).Decode(&submissionRequest)
 	if err != nil {
-		h.logger.Printf("Error decoding create submission request")
+		h.logger.Printf("Error decoding create submission request %v", err)
 		util.WriteJSON(w, http.StatusBadRequest, util.Envelope{"error": "invalid payload request"})
 		return
 	}
