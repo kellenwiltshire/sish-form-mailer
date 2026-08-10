@@ -33,11 +33,7 @@ func NewSendMailService(formStore store.FormStore, submissionsStore store.Submis
 	}
 }
 
-func (s *SendMailService) SendMail(submission_id string) error {
-	submissionId, err := strconv.ParseInt(submission_id, 10, 64)
-	if err != nil {
-		return err
-	}
+func (s *SendMailService) SendMail(submissionId int64) error {
 	submission, err := s.submissionsStore.GetFormSubmissionById(submissionId)
 	if err != nil {
 		return err
@@ -94,7 +90,6 @@ func (s *SendMailService) SendMail(submission_id string) error {
 		Received: formattedTime,
 		Payload:  payloadData,
 	})
-
 	if err != nil {
 		s.logger.Printf("Error creating template: %v\n", err)
 		return err
