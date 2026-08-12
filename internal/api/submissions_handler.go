@@ -36,7 +36,7 @@ func NewSubmissionHandler(submissionsStore store.SubmissionsStore, logger *log.L
 }
 
 func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *http.Request) {
-	siteKey := os.Getenv("GOOGLE_RECAPTCHA_SITE_KEY")
+	siteKey := os.Getenv("RECAPTCHA_SITE_KEY")
 	idParam := chi.URLParam(r, "form_id")
 	if idParam == "" {
 		h.logger.Printf("Invalid Id param")
