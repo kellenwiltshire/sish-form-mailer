@@ -1,0 +1,19 @@
+name: build-dev-release
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to main branch
+
+jobs:
+  build_and_push:
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: make build-image
+
+      - run: make build-image-push BUILD_TAG=dev
