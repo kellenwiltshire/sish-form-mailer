@@ -1,70 +1,119 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
-
-	recaptcha "cloud.google.com/go/recaptchaenterprise/v2/apiv1"
-	recaptchapb "cloud.google.com/go/recaptchaenterprise/v2/apiv1/recaptchaenterprisepb"
 )
 
-func CreateAssessment(token string) error {
-	projectId := os.Getenv("GOOGLE_PROJECT_ID")
-	if projectId == "" {
-		return fmt.Errorf("Error: Must provide projectId")
-	}
-	recaptchaKey := os.Getenv("GOOGLE_RECAPTCHA_KEY")
-	if recaptchaKey == "" {
-		return fmt.Errorf("Error: Must provide Recaptcha Key")
+type Client struct {
+	projectID string
+	apiKey    string
+	http      *http.Client
+}
+
+func NewRecaptchaClient() (*Client, error) {
+	projectID := os.Getenv("RECAPTCHA_PROJECT_ID")
+	apiKey := os.Getenv("RECAPTCHA_API_KEY")
+
+	if projectID == "" {
+		return nil, fmt.Errorf("RECATPCHA_PROJECT_ID is not set")
 	}
 
-	action := os.Getenv("GOOGLE_RECAPTCHA_ACTION")
-	if action == "" {
-		return fmt.Errorf("Error: Must provide recaptcha action")
+	if apiKey == "" {
+		return nil, fmt.Errorf("RECAPTCHA_API_KEY is not set")
 	}
 
-	ctx := context.Background()
-	client, err := recaptcha.NewClient(ctx)
+	return &Client{
+		projectID: projectID,
+		apiKey:    apiKey,
+		http:      &http.Client{},
+	}, nil
+}
+
+type assessmentRequest struct {
+	Event event `json:"event"`
+}
+
+type event struct {
+	Token          string `json:"token"`
+	SiteKey        string `json:"siteKey"`
+	UserAgent      string `json:"userAgent,omitempty"`
+	UserIPAddress  string `json:"userIpAddress,omitempty"`
+	ExpectedAction string `json:"expectedAction,omitempty"`
+}
+
+type assessmentResponse struct {
+	TokenProperties *tokenProperties `json:"TokenProperties,omitempty"`
+	RiskAnalysis    *riskAnalysis    `json:"riskAnalysis,omitempty"`
+	Event           *event           `json:"event,omitempty"`
+}
+
+type tokenProperties struct {
+	Valid    bool   `json:"valid"`
+	Hostname string `json:"hostname,omitempty"`
+	Action   string `json:"action,omitempty"`
+}
+
+type riskAnalysis struct {
+	Score   float64  `json:"score"`
+	Reasons []string `json:"reasons,omitempty"`
+}
+
+func (c *Client) CreateAssessment(ctx context.Context, token string, siteKey string, userAgent string, userIP string, expectedAction string) (*assessmentResponse, error) {
+	reqBody := assessmentRequest{
+		Event: event{
+			Token:          token,
+			SiteKey:        siteKey,
+			UserAgent:      userAgent,
+			UserIPAddress:  userIP,
+			ExpectedAction: expectedAction,
+		},
+	}
+
+	body, err := json.Marshal(reqBody)
 	if err != nil {
-		return fmt.Errorf("Error creating captcha client %v", err)
-	}
-	defer client.Close()
-
-	event := &recaptchapb.Event{
-		Token:   token,
-		SiteKey: recaptchaKey,
+		return nil, fmt.Errorf("marshal recaptcha request: %w", err)
 	}
 
-	assessment := &recaptchapb.Assessment{
-		Event: event,
-	}
+	url := fmt.Sprintf("https://recaptchaenterprise.googleapis.com/v1/projects/%s/assessments?key=%s", c.projectID, c.apiKey)
 
-	request := &recaptchapb.CreateAssessmentRequest{
-		Assessment: assessment,
-		Parent:     fmt.Sprintf("projects/%s", projectId),
-	}
-
-	response, err := client.CreateAssessment(ctx, request)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("Error calling Create Assessment %v", err)
+		return nil, fmt.Errorf("create recaptcha request: %w", err)
 	}
 
-	// Check that the Token is valid
-	if !response.TokenProperties.Valid {
-		return fmt.Errorf("Token Invalid")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("send recaptcha request: %w", err)
 	}
 
-	// Check that the action was valid
-	if response.TokenProperties.Action != action {
-		return fmt.Errorf("Invalid Action")
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		var errorBody struct {
+			Error struct {
+				Code    int    `json:"code"`
+				Message string `json:"message"`
+				Status  string `json:"status"`
+			} `json:"error"`
+		}
+
+		_ = json.NewDecoder(resp.Body).Decode(&errorBody)
+
+		return nil, fmt.Errorf("recaptcha API error: HTTP %d: %s", resp.StatusCode, errorBody.Error.Message)
 	}
 
-	// Get the risk score. If below 0.7, reject
-	if response.RiskAnalysis.Score < 0.7 {
-		return fmt.Errorf("Rejected. Score %v", response.RiskAnalysis.Score)
+	var result assessmentResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("decode recaptcha response: %w", err)
 	}
 
-	// Score is above threshold, return true and allow submission
-	return nil
+	return &result, nil
 }
