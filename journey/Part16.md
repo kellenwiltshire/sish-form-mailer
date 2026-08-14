@@ -29,3 +29,7 @@ For successful recatpcha, the flow will look very similar to now. The biggest th
 For the unsuccessful challenges, I don't want to send these through to the User by email, but I do want to track the submissions in case of a false positive. I can still show these submissions in the UI, maybe hidden, with an indicator that the submission failed recatpcha.
 
 Let's get building. First I will modify the tables, then add in a new service to handle actually checking the recaptcha, then update everywhere else, then test it all, best I can.
+
+Okay, getting the Recaptcha hooked up too a little more work than expected, but it is working now. I still need to update the data sent to the Frontend around submission status, but that will be easy now. I've also updated so that any time a merge is made to `main` that it creates a new docker image build with the tag of `dev`. This allows me to go a lot faster. Then I can easily create a branch off of `main` when I want to create a real release.
+
+Made some more changes to how the errors are displayed for the user, and how potential spam is handled. Ready for real beta testing now I think!

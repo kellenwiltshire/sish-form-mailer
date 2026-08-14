@@ -74,7 +74,7 @@ const UpdateEmailSettings = ({
 	}
 
 	return (
-		<form action={handleSubmit} className='flex flex-col gap-2'>
+		<form action={handleSubmit} className='m-12 flex flex-col gap-2'>
 			<Input
 				name='host'
 				id='host'
@@ -128,7 +128,9 @@ const UpdateEmailSettings = ({
 				label='SMTP Recipient Email'
 				required={smtp === null}
 			/>
-			<Button type='submit'>Submit</Button>
+			<div>
+				<Button type='submit'>Submit</Button>
+			</div>
 		</form>
 	)
 }

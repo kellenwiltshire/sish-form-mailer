@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 import { useState } from 'react'
 import { fetcher } from '@/util/SWR/fetch'
 import useSWR from 'swr'
+import { classNames } from '@/util/Classnames/Classnames'
 
 type SubmissionResponse = {
 	submissions: Submission[]
@@ -10,9 +11,13 @@ type SubmissionResponse = {
 
 type SubmissionsTableProps = {
 	formId: string
+	showSpamSubmissions: boolean
 }
 
-const SubmissionsTable = ({ formId }: SubmissionsTableProps) => {
+const SubmissionsTable = ({
+	formId,
+	showSpamSubmissions,
+}: SubmissionsTableProps) => {
 	const [confirmation, setConfirmation] = useState<number | null>(null)
 
 	const {
@@ -44,6 +49,13 @@ const SubmissionsTable = ({ formId }: SubmissionsTableProps) => {
 		unknown
 	>
 	const headers = Object.keys(firstPayload)
+
+	const spamSubmissions = submissions.filter(
+		(submission) => submission.status === 'spam',
+	)
+	const filteredSubmission = submissions.filter(
+		(submission) => submission.status !== 'spam',
+	)
 
 	const handleDeleteResponse = (id: number) => {
 		fetch(`/api/forms/${formId}/responses/${id}`, {
@@ -84,52 +96,127 @@ const SubmissionsTable = ({ formId }: SubmissionsTableProps) => {
 					>
 						Status
 					</th>
-
+					<th
+						scope='col'
+						className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900'
+					>
+						Error Reason
+					</th>
 					<th scope='col' className='py-3.5 pr-4 pl-3'>
 						<span className='sr-only'>Delete</span>
 					</th>
 				</tr>
 			</thead>
 			<tbody className='divide-y divide-gray-200'>
-				{submissions.map((submission) => {
-					const payload = JSON.parse(submission.payload) as Record<
-						string,
-						unknown
-					>
-					return (
-						<tr key={submission.id}>
-							{headers.map((h) => (
-								<td
-									key={h}
-									className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'
-								>
-									{String(payload[h] ?? '')}
-								</td>
-							))}
-							<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
-								{submission.status}
-							</td>
-							<td className='py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap'>
-								{confirmation === submission.id ? (
-									<button
-										onClick={() => handleDeleteResponse(submission.id)}
-										className='cursor-pointer text-red-600 hover:text-red-900'
+				{showSpamSubmissions
+					? spamSubmissions.map((submission) => {
+							const payload = JSON.parse(submission.payload) as Record<
+								string,
+								unknown
+							>
+							return (
+								<tr key={submission.id}>
+									{headers.map((h) => (
+										<td
+											key={h}
+											className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'
+										>
+											{String(payload[h] ?? '')}
+										</td>
+									))}
+									<td
+										className={classNames(
+											'px-3 py-4 text-sm whitespace-nowrap text-gray-500',
+										)}
 									>
-										Are you sure?
-										<span className='sr-only'>, {submission.id}</span>
-									</button>
-								) : (
-									<button
-										onClick={() => setConfirmation(submission.id)}
-										className='cursor-pointer text-red-600 hover:text-red-900'
+										<div
+											className={classNames(
+												'rounded-full',
+												submission.status === 'error'
+													? 'bg-red-500'
+													: submission.status === 'received'
+														? 'bg-yellow-300'
+														: 'bg-green-600',
+											)}
+										>
+											{submission.status}
+										</div>
+									</td>
+									<td className='max-w-3xs px-3 py-4 text-sm text-wrap text-gray-500'>
+										{submission.error_reason}
+									</td>
+									<td className='py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap'>
+										{confirmation === submission.id ? (
+											<button
+												onClick={() => handleDeleteResponse(submission.id)}
+												className='cursor-pointer text-red-600 hover:text-red-900'
+											>
+												Are you sure?
+												<span className='sr-only'>, {submission.id}</span>
+											</button>
+										) : (
+											<button
+												onClick={() => setConfirmation(submission.id)}
+												className='cursor-pointer text-red-600 hover:text-red-900'
+											>
+												Delete
+											</button>
+										)}
+									</td>
+								</tr>
+							)
+						})
+					: filteredSubmission.map((submission) => {
+							const payload = JSON.parse(submission.payload) as Record<
+								string,
+								unknown
+							>
+							return (
+								<tr key={submission.id}>
+									{headers.map((h) => (
+										<td
+											key={h}
+											className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'
+										>
+											{String(payload[h] ?? '')}
+										</td>
+									))}
+									<td
+										className={classNames(
+											'rounded px-3 py-4 text-sm whitespace-nowrap text-gray-500',
+											submission.status === 'error'
+												? 'bg-red-500'
+												: submission.status === 'received'
+													? 'bg-yellow-500'
+													: 'bg-green-700',
+										)}
 									>
-										Delete
-									</button>
-								)}
-							</td>
-						</tr>
-					)
-				})}
+										{submission.status}
+									</td>
+									<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
+										{submission.error_reason}
+									</td>
+									<td className='py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap'>
+										{confirmation === submission.id ? (
+											<button
+												onClick={() => handleDeleteResponse(submission.id)}
+												className='cursor-pointer text-red-600 hover:text-red-900'
+											>
+												Are you sure?
+												<span className='sr-only'>, {submission.id}</span>
+											</button>
+										) : (
+											<button
+												onClick={() => setConfirmation(submission.id)}
+												className='cursor-pointer text-red-600 hover:text-red-900'
+											>
+												Delete
+											</button>
+										)}
+									</td>
+								</tr>
+							)
+						})}
 			</tbody>
 		</table>
 	)

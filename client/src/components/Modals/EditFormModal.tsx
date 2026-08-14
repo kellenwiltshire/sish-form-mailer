@@ -1,5 +1,8 @@
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { updateAddOriginModalOpen } from '@/redux/modalSlice/modalSlice'
+import {
+	updateAddFormModalOpen,
+	updateEditFormModalOpen,
+} from '@/redux/modalSlice/modalSlice'
 import {
 	Dialog,
 	DialogPanel,
@@ -12,47 +15,49 @@ import Button from '../UI/Button'
 import { toast } from 'react-toastify'
 import { useSWRConfig } from 'swr'
 
-const AddOriginModal = () => {
+const EditFormModal = () => {
 	const { mutate } = useSWRConfig()
 	const dispatch = useAppDispatch()
-	const { addOriginModalOpen } = useAppSelector((state) => state.modal)
+	const { editFormModalOpen } = useAppSelector((state) => state.modal)
+	const { selectedForm } = useAppSelector((state) => state.modal)
 
 	const handleSubmit = (form: FormData) => {
 		const formData = Object.fromEntries(form.entries())
 
-		const { origin } = formData
+		const { name, target_email } = formData
 
-		fetch('/api/origins', {
-			method: 'POST',
+		fetch(`/api/forms/${selectedForm?.id}`, {
+			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
-				origin,
+				name,
+				target_email,
 			}),
 		})
 			.then((res) => {
 				if (!res.ok) {
 					throw new Error()
 				}
-				toast.success('Origin Created')
+				toast.success('Form Updated')
 			})
 			.catch((err) => {
 				console.error(err)
 				toast.error('Error: Please try again later')
 			})
 			.finally(() => {
-				mutate('/api/origins')
-				dispatch(updateAddOriginModalOpen(false))
+				mutate('/api/forms')
+				dispatch(updateAddFormModalOpen(false))
 			})
 	}
 
 	return (
-		<Transition show={addOriginModalOpen} as={Fragment}>
+		<Transition show={editFormModalOpen} as={Fragment}>
 			<Dialog
 				as='div'
 				className='relative z-99'
-				onClose={() => dispatch(updateAddOriginModalOpen(false))}
+				onClose={() => dispatch(updateAddFormModalOpen(false))}
 			>
 				<TransitionChild
 					as={Fragment}
@@ -79,22 +84,27 @@ const AddOriginModal = () => {
 						>
 							<DialogPanel className='relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6'>
 								<div className='flex flex-col gap-4'>
-									<h3 className='text-center text-2xl'>Create Origin</h3>
+									<h3 className='text-center text-2xl'>Edit Form</h3>
 									<form action={handleSubmit} className='flex flex-col gap-4'>
 										<Input
-											id='origin'
-											name='origin'
-											placeholder='http(s)://...'
+											id='name'
+											name='name'
+											placeholder=''
 											type='text'
-											label='Origin Address'
+											label='Form Name'
+										/>
+										<Input
+											id='target_email'
+											name='target_email'
+											placeholder=''
+											type='text'
+											label='Target Email'
 										/>
 
 										<div className='flex w-full flex-row justify-end gap-2'>
 											<Button
 												variant='ghost'
-												onClick={() =>
-													dispatch(updateAddOriginModalOpen(false))
-												}
+												onClick={() => dispatch(updateEditFormModalOpen(false))}
 											>
 												Cancel
 											</Button>
@@ -111,4 +121,4 @@ const AddOriginModal = () => {
 	)
 }
 
-export default AddOriginModal
+export default EditFormModal

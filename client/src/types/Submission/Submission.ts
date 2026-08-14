@@ -3,5 +3,6 @@ export type Submission = {
 	id: number
 	payload: string
 	status: string
+	error_reason: string
 	submitted_at: string
 }
