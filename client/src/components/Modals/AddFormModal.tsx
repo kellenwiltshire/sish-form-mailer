@@ -97,7 +97,7 @@ const AddFormModal = () => {
 											label='Target Email'
 										/>
 
-										<div className='flex flex-row gap-2'>
+										<div className='flex w-full flex-row justify-end gap-2'>
 											<Button
 												variant='ghost'
 												onClick={() => dispatch(updateAddFormModalOpen(false))}

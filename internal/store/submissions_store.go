@@ -27,7 +27,7 @@ type SubmissionsStore interface {
 	GetFormSubmissionById(submission_id int64) (*Submission, error)
 	DeleteSubmission(submission_id int64) error
 	DoesUserOwnForm(user_id int64, form_id string) error
-	UpdateSubmissionStatus(submission_id int64, status string) error
+	UpdateSubmissionStatus(submission_id int64, error_reason string, status string) error
 }
 
 func (s *PostgresSubmissionsStore) CreateSubmission(submission *Submission) error {
@@ -44,7 +44,7 @@ func (s *PostgresSubmissionsStore) CreateSubmission(submission *Submission) erro
 
 func (s *PostgresSubmissionsStore) GetFormSubmissions(form_id string) ([]Submission, error) {
 	query := `
-		SELECT id, form_id, payload, submitted_at, status FROM form_submissions WHERE form_id = $1
+		SELECT id, form_id, payload, submitted_at, status, error_reason FROM form_submissions WHERE form_id = $1
 	`
 
 	var submissions []Submission
@@ -54,7 +54,7 @@ func (s *PostgresSubmissionsStore) GetFormSubmissions(form_id string) ([]Submiss
 	}
 	for rows.Next() {
 		var submission Submission
-		if err := rows.Scan(&submission.Id, &submission.FormId, &submission.Payload, &submission.SubmittedAt, &submission.Status); err != nil {
+		if err := rows.Scan(&submission.Id, &submission.FormId, &submission.Payload, &submission.SubmittedAt, &submission.Status, &submission.ErrorReason); err != nil {
 			return nil, err
 		}
 		submissions = append(submissions, submission)
@@ -64,11 +64,11 @@ func (s *PostgresSubmissionsStore) GetFormSubmissions(form_id string) ([]Submiss
 
 func (s *PostgresSubmissionsStore) GetFormSubmissionById(submission_id int64) (*Submission, error) {
 	query := `
-		SELECT id, form_id, payload, submitted_at, status FROM form_submissions WHERE id = $1
+		SELECT id, form_id, payload, submitted_at, status, error_reason FROM form_submissions WHERE id = $1
 	`
 
 	submission := &Submission{}
-	err := s.db.QueryRow(query, submission_id).Scan(&submission.Id, &submission.FormId, &submission.Payload, &submission.SubmittedAt, &submission.Status)
+	err := s.db.QueryRow(query, submission_id).Scan(&submission.Id, &submission.FormId, &submission.Payload, &submission.SubmittedAt, &submission.Status, &submission.ErrorReason)
 	if err != nil {
 		return nil, err
 	}
@@ -111,12 +111,12 @@ func (s *PostgresSubmissionsStore) DoesUserOwnForm(user_id int64, form_id string
 	return nil
 }
 
-func (s *PostgresSubmissionsStore) UpdateSubmissionStatus(submission_id int64, status string) error {
+func (s *PostgresSubmissionsStore) UpdateSubmissionStatus(submission_id int64, error_reason string, status string) error {
 	query := `
-		UPDATE form_submissions SET status = $1 WHERE id = $2
+		UPDATE form_submissions SET status = $1, error_reason = $2 WHERE id = $3
 	`
 
-	result, err := s.db.Exec(query, status, submission_id)
+	result, err := s.db.Exec(query, status, error_reason, submission_id)
 	if err != nil {
 		return err
 	}

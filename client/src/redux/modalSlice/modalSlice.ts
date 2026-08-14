@@ -6,6 +6,7 @@ type InitialState = {
 	addFormModalOpen: boolean
 	addOriginModalOpen: boolean
 	deleteFormModalOpen: boolean
+	editFormModalOpen: boolean
 	selectedForm: Form | null
 }
 
@@ -14,6 +15,7 @@ const initialState: InitialState = {
 	addFormModalOpen: false,
 	addOriginModalOpen: false,
 	deleteFormModalOpen: false,
+	editFormModalOpen: false,
 	selectedForm: null,
 }
 
@@ -33,6 +35,9 @@ const modalSlice = createSlice({
 		updateDeleteFormModalOpen(state, action: PayloadAction<boolean>) {
 			state.deleteFormModalOpen = action.payload
 		},
+		updateEditFormModalOpen(state, action: PayloadAction<boolean>) {
+			state.editFormModalOpen = action.payload
+		},
 		updateSelectedForm(state, action: PayloadAction<Form | null>) {
 			state.selectedForm = action.payload
 		},
@@ -44,6 +49,7 @@ export const {
 	updateAddFormModalOpen,
 	updateAddOriginModalOpen,
 	updateDeleteFormModalOpen,
+	updateEditFormModalOpen,
 	updateSelectedForm,
 } = modalSlice.actions
 export default modalSlice.reducer

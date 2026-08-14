@@ -2,11 +2,20 @@ import Button from '@/components/UI/Button'
 import { useAppDispatch } from '@/redux/hooks'
 import {
 	updateDeleteFormModalOpen,
+	updateEditFormModalOpen,
 	updateSelectedForm,
 } from '@/redux/modalSlice/modalSlice'
 import type { Form } from '@/types/Form/Form'
 
-const FormInfo = ({ form }: { form: Form }) => {
+const FormInfo = ({
+	showSpamSubmissions,
+	setShowSpamSubmissions,
+	form,
+}: {
+	showSpamSubmissions: boolean
+	setShowSpamSubmissions: (bool: boolean) => void
+	form: Form
+}) => {
 	const dispatch = useAppDispatch()
 	return (
 		<dl className='mx-auto flex w-full flex-row flex-wrap justify-between p-2'>
@@ -30,10 +39,15 @@ const FormInfo = ({ form }: { form: Form }) => {
 					{form.target_email}
 				</dd>
 			</div>
-			<div className='flex flex-wrap items-baseline justify-between gap-y-2 py-10'>
-				<Button>Edit Form</Button>
-			</div>
-			<div className='flex flex-wrap items-baseline justify-between gap-y-2 py-10'>
+			<div className='flex flex-row items-center gap-2'>
+				<Button onClick={() => setShowSpamSubmissions(!showSpamSubmissions)}>
+					{showSpamSubmissions
+						? 'Hide Spam Submissions'
+						: 'Show Spam Submissions'}
+				</Button>
+				<Button onClick={() => dispatch(updateEditFormModalOpen(true))}>
+					Edit Form
+				</Button>
 				<Button
 					variant='danger'
 					onClick={() => {

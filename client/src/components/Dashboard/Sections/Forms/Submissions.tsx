@@ -3,6 +3,7 @@ import { fetcher } from '@/util/SWR/fetch'
 import useSWR from 'swr'
 import FormInfo from './FormInfo'
 import SubmissionsTable from './SubmissionsTable'
+import { useState } from 'react'
 
 type FormResponse = {
 	form: Form
@@ -13,6 +14,7 @@ type SubmissionsProps = {
 }
 
 const Submissions = ({ formId }: SubmissionsProps) => {
+	const [showSpamSubmissions, setShowSpamSubmissions] = useState(false)
 	const { data: formData, error: formError } = useSWR<FormResponse, Error>(
 		`/api/forms/${formId}`,
 		fetcher,
@@ -29,9 +31,18 @@ const Submissions = ({ formId }: SubmissionsProps) => {
 	}
 	return (
 		<div className='flex flex-col gap-4 divide-y divide-gray-200'>
-			{form && <FormInfo form={form} />}
+			{form && (
+				<FormInfo
+					form={form}
+					showSpamSubmissions={showSpamSubmissions}
+					setShowSpamSubmissions={setShowSpamSubmissions}
+				/>
+			)}
 			<div className='flex flex-col gap-4'>
-				<SubmissionsTable formId={formId} />
+				<SubmissionsTable
+					formId={formId}
+					showSpamSubmissions={showSpamSubmissions}
+				/>
 			</div>
 		</div>
 	)

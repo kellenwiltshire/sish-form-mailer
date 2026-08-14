@@ -35,6 +35,41 @@ func NewSubmissionHandler(submissionsStore store.SubmissionsStore, logger *log.L
 	}
 }
 
+func (h *SubmissionHandler) Recaptcha(token string, siteKey string, r *http.Request) (bool, error) {
+	ctx := context.Background()
+
+	captcha, err := service.NewRecaptchaClient()
+	if err != nil {
+		h.logger.Printf("error create recaptcha client: %v", err)
+	}
+
+	assessment, err := captcha.CreateAssessment(
+		ctx,
+		token,
+		siteKey,
+		r.Header.Get("User-Agent"),
+		r.RemoteAddr,
+		"form_submission",
+	)
+	if err != nil {
+		h.logger.Printf("error creating recaptcha assessment: %v", err)
+		return false, fmt.Errorf("creating recaptcha assessment: %v", err)
+	}
+
+	if assessment.TokenProperties == nil || !assessment.TokenProperties.Valid {
+		h.logger.Printf("error invalid recaptcha token: %v", err)
+		return false, fmt.Errorf("invalid captcha token", err)
+	}
+
+	score := assessment.RiskAnalysis.Score
+
+	if score < 0.5 {
+		h.logger.Printf("recaptcha score below threshold: %v", score)
+		return false, fmt.Errorf("invalid recaptcha score: %v", score)
+	}
+	return true, nil
+}
+
 func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *http.Request) {
 	siteKey := os.Getenv("RECAPTCHA_SITE_KEY")
 	idParam := chi.URLParam(r, "form_id")
@@ -44,6 +79,10 @@ func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *htt
 		return
 	}
 	var submissionRequest registerSubmissionRequest
+
+	isRecaptchaEnabled := os.Getenv("DISABLE_RECAPTCHA") == ""
+
+	h.logger.Printf("isRecaptchaEnabled: ", isRecaptchaEnabled)
 
 	err := json.NewDecoder(r.Body).Decode(&submissionRequest)
 	if err != nil {
@@ -59,50 +98,25 @@ func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *htt
 	}
 
 	submission_status := "received"
-	var error_status string
+	var error_reason string
 
-	ctx := context.Background()
-
-	captcha, err := service.NewRecaptchaClient()
-	if err != nil {
-		h.logger.Printf("error create recaptcha client: %v", err)
-		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "internal service error"})
-		return
-	}
-
-	assessment, err := captcha.CreateAssessment(
-		ctx,
-		submissionRequest.Token,
-		siteKey,
-		r.Header.Get("User-Agent"),
-		r.RemoteAddr,
-		"form_submission",
-	)
-	if err != nil {
-		h.logger.Printf("error creating recaptcha assessment: %v", err)
-		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "interal service error"})
-		return
-	}
-
-	if assessment.TokenProperties == nil || !assessment.TokenProperties.Valid {
-		h.logger.Printf("error invalid recaptcha token: %v", err)
-		util.WriteJSON(w, http.StatusInternalServerError, util.Envelope{"error": "invalid recaptcha token"})
-		return
-	}
-
-	score := assessment.RiskAnalysis.Score
-
-	if score < 0.5 {
-		h.logger.Printf("recaptcha score below threshold: %v", score)
-		error_status = fmt.Sprintf("invalid recaptcha score: %v", score)
-		submission_status = "error"
+	if isRecaptchaEnabled {
+		isNotSpam, err := h.Recaptcha(submissionRequest.Token, siteKey, r)
+		if !isNotSpam {
+			submission_status = "spam"
+			error_reason = fmt.Sprintf("Spam: %v", err)
+		}
+		if err != nil {
+			submission_status = "error"
+			error_reason = fmt.Sprintf("Recaptcha Assessment Error")
+		}
 	}
 
 	submission := &store.Submission{
 		FormId:      idParam,
 		Payload:     string(submissionRequest.Payload),
 		Status:      submission_status,
-		ErrorReason: error_status,
+		ErrorReason: error_reason,
 	}
 
 	err = h.submissionsStore.CreateSubmission(submission)

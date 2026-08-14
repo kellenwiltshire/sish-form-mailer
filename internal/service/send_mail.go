@@ -36,16 +36,24 @@ func NewSendMailService(formStore store.FormStore, submissionsStore store.Submis
 func (s *SendMailService) SendMail(submissionId int64) error {
 	submission, err := s.submissionsStore.GetFormSubmissionById(submissionId)
 	if err != nil {
+		error := fmt.Sprintf("Error sending email: %v", err)
+		err = s.submissionsStore.UpdateSubmissionStatus(submissionId, error, "error")
 		return err
 	}
 
 	form, err := s.formStore.GetFormInfoForEmail(submission.FormId)
 	if err != nil {
+		error := fmt.Sprintf("Error sending email: %v", err)
+		err = s.submissionsStore.UpdateSubmissionStatus(submissionId, error, "error")
+
 		return err
 	}
 
 	smtp, pass, err := s.smtpStore.GetSmtpEmailSettings(int64(form.UserId))
 	if err != nil {
+		error := fmt.Sprintf("Error sending email: %v", err)
+		err = s.submissionsStore.UpdateSubmissionStatus(submissionId, error, "error")
+
 		return err
 	}
 
@@ -54,6 +62,9 @@ func (s *SendMailService) SendMail(submissionId int64) error {
 	t, err := template.ParseFS(templateFS, "email-template.html")
 	if err != nil {
 		s.logger.Printf("Failed to parse embedded template: %v", err)
+		error := fmt.Sprintf("Error sending email: %v", err)
+		err = s.submissionsStore.UpdateSubmissionStatus(submissionId, error, "error")
+
 		return err
 	}
 
@@ -76,6 +87,9 @@ func (s *SendMailService) SendMail(submissionId int64) error {
 	parsedTime, err := time.Parse(time.RFC3339Nano, submission.SubmittedAt)
 	if err != nil {
 		s.logger.Printf("Error parsing time: %v\n", err)
+		error := fmt.Sprintf("Error sending email: %v", err)
+		err = s.submissionsStore.UpdateSubmissionStatus(submissionId, error, "error")
+
 		return err
 	}
 
@@ -100,13 +114,16 @@ func (s *SendMailService) SendMail(submissionId int64) error {
 	err = netSmtp.SendMail(smtp.Host+":"+strconv.Itoa(smtp.Port), auth, smtp.SenderEmail, to, body.Bytes())
 	if err != nil {
 		s.logger.Printf("Error sending email: %v", err)
-		err = s.submissionsStore.UpdateSubmissionStatus(submissionId, "error")
+		err = s.submissionsStore.UpdateSubmissionStatus(submissionId, "Error sending email", "error")
 		return err
 	}
 
-	err = s.submissionsStore.UpdateSubmissionStatus(submissionId, "dispatched")
+	err = s.submissionsStore.UpdateSubmissionStatus(submissionId, "", "dispatched")
 	if err != nil {
 		s.logger.Printf("Error updating status: %v", err)
+		error := fmt.Sprintf("Error sending email: %v", err)
+		err = s.submissionsStore.UpdateSubmissionStatus(submissionId, error, "error")
+
 		return err
 	}
 	return nil
