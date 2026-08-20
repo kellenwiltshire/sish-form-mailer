@@ -6,6 +6,8 @@ import {
 	updateSelectedForm,
 } from '@/redux/modalSlice/modalSlice'
 import type { Form } from '@/types/Form/Form'
+import { ClipboardDocumentIcon } from '@heroicons/react/24/outline'
+import { toast } from 'react-toastify'
 
 const FormInfo = ({
 	showSpamSubmissions,
@@ -24,6 +26,17 @@ const FormInfo = ({
 				<dd className='w-full flex-none text-xl font-medium tracking-tight text-gray-900'>
 					{form.id}
 				</dd>
+				<Button
+					onClick={() => {
+						navigator.clipboard
+							.writeText(form.id)
+							.then(() => toast.success('ID Copied to clipboard'))
+							.catch(() => toast.error('Unable to copy to clipboard'))
+					}}
+					variant='ghost'
+				>
+					<ClipboardDocumentIcon className='h-5 w-5' />
+				</Button>
 			</div>
 
 			<div className='flex flex-wrap items-baseline justify-between gap-y-2 py-10'>

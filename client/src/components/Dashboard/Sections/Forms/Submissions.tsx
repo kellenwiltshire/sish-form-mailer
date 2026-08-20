@@ -38,7 +38,7 @@ const Submissions = ({ formId }: SubmissionsProps) => {
 					setShowSpamSubmissions={setShowSpamSubmissions}
 				/>
 			)}
-			<div className='flex flex-col gap-4'>
+			<div className='flex flex-col gap-4 overflow-scroll'>
 				<SubmissionsTable
 					formId={formId}
 					showSpamSubmissions={showSpamSubmissions}
