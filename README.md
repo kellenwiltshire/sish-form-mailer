@@ -37,7 +37,6 @@ SiSH Form Mailer lets you create forms through a web interface and use them from
 - [Development](#development)
 - [Technology](#technology)
 - [Security](#security)
-- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -159,10 +158,6 @@ services:
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
       - RECAPTCHA_API_KEY=${RECAPTCHA_API_KEY}
     restart: unless-stopped
-
-networks:
-  media-centre-network:
-    driver: bridge
 ```
 
 Create an environment file:
@@ -199,6 +194,7 @@ docker compose up -d
 SiSH Form Mailer will be available on the configured port.
 
 > **Important:** Change `DB_PASSWORD`, `SECRET_KEY`, and `ADMIN_PASS` before using SiSH Form Mailer in production.
+>
 > reCAPTCHA is enabled by default. To disable it, set DISABLE_RECAPTCHA to any value (for example, DISABLE_RECAPTCHA=true). The actual value is not evaluated; only whether the variable is set matters.
 
 ---
@@ -510,23 +506,6 @@ For production deployments, also:
 - Use strong passwords.
 - Keep the application and dependencies up to date.
 - Monitor logs and email delivery.
-
----
-
-# Roadmap
-
-Potential future improvements:
-
-- [ ] Improved form configuration
-- [ ] Custom email templates
-- [ ] Submission history
-- [ ] Webhook support
-- [ ] Additional spam protection
-- [ ] Improved user and permission management
-- [ ] API documentation
-- [ ] Email delivery monitoring
-- [ ] Retry/failure handling improvements
-- [ ] Submission analytics
 
 ---
 
