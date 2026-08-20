@@ -2,25 +2,30 @@
 
 **Simple Self Hosted Form Mailer**
 
-A lightweight, fast, self-hosted alternative to services like [Formspree](https://formspree.io/).
+A lightweight, fast, self-hosted form backend for small developers.
 
-SiSH Form Mailer lets you create forms through a web interface and use them from any website. Each form is automatically assigned a unique six-character alphanumeric code, which becomes its API endpoint.
+SiSH Form Mailer provides a simple way to add forms to websites without building or maintaining a custom backend.
 
-**Create a form → Add the endpoint to your website → Receive submissions by email.**
+Create a form in the SiSH Form Mailer UI, get a unique six-character form code, and point your website at the generated endpoint.
 
-## Features
+**No custom API routes. No third-party form service. Just a simple form endpoint you can host yourself.**
 
-- 🏠 **Self hosted** — Your forms and submissions run on your own infrastructure.
-- ⚡ **Fast** — Submissions are saved to PostgreSQL before the request completes.
-- 📬 **Asynchronous email** — Email delivery happens after the submission has been saved.
+---
+
+## ✨ Features
+
+- 🏠 **Self hosted** — Run it on your own infrastructure.
+- ⚡ **Fast submissions** — Submissions are saved to PostgreSQL before the HTTP request completes.
+- 💾 **Permanent submission storage** — Submissions remain available in the UI even if email delivery fails.
+- 📬 **Asynchronous email delivery** — Email is sent after the submission has been persisted.
 - 👥 **Multiple users** — One installation can support multiple users.
 - 📝 **Multiple forms** — Each user can create multiple forms.
 - 🔑 **Automatic form codes** — Every form gets a unique six-character alphanumeric code.
 - 📧 **Per-user SMTP** — Each user can configure their own SMTP server and credentials.
-- 🎯 **Per-form destinations** — Each form can send submissions to its own target email address.
-- 🔒 **CORS protection** — Control which websites can submit to each form.
-- 🛡️ **Rate limiting & reCAPTCHA** — Protection for public form endpoints.
-- 🐳 **Docker** — Deploy with a pre-built Docker image.
+- 🎯 **Per-form destinations** — Each form can have its own destination email address.
+- 🔒 **CORS protection** — Restrict which websites are allowed to use a form.
+- 🛡️ **Rate limiting & reCAPTCHA** — Protection for publicly accessible form endpoints.
+- 🐳 **Docker** — Available as a pre-built Docker image.
 - 🐘 **PostgreSQL** — Persistent storage for forms and submissions.
 
 ---
@@ -31,80 +36,82 @@ SiSH Form Mailer lets you create forms through a web interface and use them from
 - [Quick Start](#quick-start)
 - [Using a Form](#using-a-form)
 - [Users, Forms & Email](#users-forms--email)
-- [Fast by Design](#fast-by-design)
+- [Fast & Reliable Submissions](#fast--reliable-submissions)
 - [Configuration](#configuration)
 - [Production Deployment](#production-deployment)
 - [Development](#development)
 - [Technology](#technology)
 - [Security](#security)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 
 ---
 
-## How It Works
+# How It Works
 
-SiSH Form Mailer is designed to sit between your website and your email infrastructure.
-
-For example, you might host it at:
+SiSH Form Mailer is designed to be hosted at a domain such as:
 
 ```text
 https://form-mailer.example.com
 ```
 
-You create a form through the SiSH Form Mailer UI:
+A user creates a form through the SiSH Form Mailer UI.
+
+For example:
 
 ```text
 Form Name: Contact Form
 Form Code: a7K92x
 ```
 
-The form's API endpoint is then:
+SiSH Form Mailer automatically creates the form's endpoint:
 
 ```text
 https://form-mailer.example.com/api/forms/a7K92x
 ```
 
-Your website posts form submissions to that endpoint.
+The user doesn't create a custom API route. The six-character code identifies the form.
+
+An external website can then POST submissions directly to that endpoint.
 
 ```text
 ┌─────────────────┐
 │   Your Website  │
 │                 │
-│  HTML Form      │
+│   HTML Form     │
 └────────┬────────┘
          │
          │ POST
          ▼
-┌─────────────────────────┐
-│    SiSH Form Mailer     │
-│                         │
-│  CORS / Validation      │
+┌──────────────────────────┐
+│     SiSH Form Mailer     │
+│                          │
+│  CORS / Validation       │
 │  Rate Limiting           │
 │  Spam Protection         │
-└───────────┬─────────────┘
+└───────────┬──────────────┘
             │
             │ Save
             ▼
-┌─────────────────────────┐
-│       PostgreSQL        │
-│                         │
-│      Submission         │
-└───────────┬─────────────┘
+┌──────────────────────────┐
+│        PostgreSQL        │
+│                          │
+│       Submission         │
+│         stored           │
+└───────────┬──────────────┘
             │
-            │ DB Listener
+            │ Database Listener
             ▼
-┌─────────────────────────┐
-│     Email Delivery      │
-│                         │
-│      User's SMTP        │
-└───────────┬─────────────┘
+┌──────────────────────────┐
+│      Email Delivery      │
+│                          │
+│       User's SMTP        │
+└───────────┬──────────────┘
             │
             ▼
       Destination Email
 ```
-
-Users don't create custom API routes. The application generates the form code automatically.
 
 ---
 
@@ -157,6 +164,7 @@ services:
       - RECAPTCHA_PROJECT_ID=${RECAPTCHA_PROJECT_ID}
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
       - RECAPTCHA_API_KEY=${RECAPTCHA_API_KEY}
+      - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA}
     restart: unless-stopped
 ```
 
@@ -183,9 +191,10 @@ INITIAL_ORIGIN=https://form-mailer.example.com
 RECAPTCHA_PROJECT_ID=
 RECAPTCHA_SITE_KEY=
 RECAPTCHA_API_KEY=
+DISABLE_RECAPTCHA=
 ```
 
-Then start the application:
+Start the application:
 
 ```bash
 docker compose up -d
@@ -201,15 +210,15 @@ SiSH Form Mailer will be available on the configured port.
 
 # Using a Form
 
-After logging into SiSH Form Mailer, create a form through the web interface.
+Once logged in, create a form through the SiSH Form Mailer UI.
 
-The application will generate a six-character code such as:
+The application generates a six-character code, for example:
 
 ```text
 a7K92x
 ```
 
-The resulting endpoint is:
+The form endpoint becomes:
 
 ```text
 https://form-mailer.example.com/api/forms/a7K92x
@@ -244,19 +253,19 @@ The website does not need its own backend.
 
 # Users, Forms & Email
 
-SiSH Form Mailer is designed around a **multi-user, multi-form** model.
+SiSH Form Mailer is designed around a simple multi-user, multi-form model.
 
-### Users
+## Users
 
-A single installation can have multiple users.
+A single installation can support multiple users.
 
 Each user can manage their own forms and configure their own SMTP settings.
 
-### Forms
+## Forms
 
 Each user can create multiple forms.
 
-Every form gets its own generated six-character code:
+Every form receives its own generated six-character code:
 
 ```text
 Contact Form       → a7K92x
@@ -265,7 +274,7 @@ Support Request    → x7Q4nK
 Job Application    → P82kLm
 ```
 
-### SMTP
+## SMTP
 
 SMTP configuration belongs to the user.
 
@@ -276,9 +285,11 @@ User A → smtp.company-a.com
 User B → smtp.company-b.com
 ```
 
-This allows a single SiSH Form Mailer installation to serve multiple users without requiring everyone to share the same outbound mail account.
+Each user's submissions are sent using their configured SMTP credentials.
 
-### Destination Email
+SMTP credentials are encrypted when stored and only decrypted when they are needed to send an email.
+
+## Destination Email
 
 The destination email belongs to the form.
 
@@ -290,7 +301,9 @@ Sales Enquiry      → sales@example.com
 Support Request    → support@example.com
 ```
 
-This gives you a simple separation:
+This allows a single user to route different forms to different inboxes.
+
+The resulting model is intentionally simple:
 
 ```text
 User
@@ -309,11 +322,11 @@ User
 
 ---
 
-# Fast by Design
+# Fast & Reliable Submissions
 
-A key design goal of SiSH Form Mailer is that **form submissions should feel instant**.
+One of the core design goals of SiSH Form Mailer is that form submissions should feel instant.
 
-The HTTP request does not wait for an email to be sent.
+The HTTP request does **not** wait for SMTP.
 
 Instead:
 
@@ -322,6 +335,9 @@ Browser
    │
    ▼
 Form Endpoint
+   │
+   ▼
+Validate Request
    │
    ▼
 Save Submission
@@ -333,7 +349,7 @@ PostgreSQL
 HTTP Response
 ```
 
-Email delivery happens afterward through a database listener:
+Email delivery happens afterward:
 
 ```text
 PostgreSQL
@@ -348,12 +364,23 @@ Process Submission
 User's SMTP Server
    │
    ▼
-Form's Destination Email
+Destination Email
 ```
 
-This means a slow SMTP server or temporary email-provider delay doesn't need to make the website visitor wait.
+The submission is permanently stored in PostgreSQL before email delivery is attempted.
 
-The database provides the durable handoff between accepting the submission and delivering the email.
+This means:
+
+- A slow SMTP server doesn't slow down the form submission.
+- A temporary SMTP failure doesn't cause the submission to disappear.
+- The submission remains accessible through the SiSH Form Mailer UI.
+- Email delivery can be handled independently of the original HTTP request.
+
+The database is the durable source of truth for submissions.
+
+> **If an email fails, the submission is still there.**
+
+Automatic retry of failed email delivery is planned for a future release and is not part of the 1.0 scope.
 
 ---
 
@@ -361,25 +388,38 @@ The database provides the durable handoff between accepting the submission and d
 
 SiSH Form Mailer is configured through environment variables.
 
-| Variable               | Description                         |
-| ---------------------- | ----------------------------------- |
-| `PORT`                 | HTTP port                           |
-| `TZ`                   | Application/container timezone      |
-| `PUID`                 | Container user ID                   |
-| `PGID`                 | Container group ID                  |
-| `DB_HOST`              | PostgreSQL hostname                 |
-| `DB_PORT`              | PostgreSQL port                     |
-| `DB_USERNAME`          | PostgreSQL username                 |
-| `DB_PASSWORD`          | PostgreSQL password                 |
-| `DB_DATABASE_NAME`     | PostgreSQL database name            |
-| `SECRET_KEY`           | Application secret                  |
-| `ADMIN_PASS`           | Initial administrator password      |
-| `INITIAL_ORIGIN`       | Application origin                  |
-| `RECAPTCHA_PROJECT_ID` | Google reCAPTCHA Enterprise project |
-| `RECAPTCHA_SITE_KEY`   | reCAPTCHA site key                  |
-| `RECAPTCHA_API_KEY`    | reCAPTCHA API key                   |
+| Variable               | Description                                   |
+| ---------------------- | --------------------------------------------- |
+| `PORT`                 | HTTP port                                     |
+| `TZ`                   | Application/container timezone                |
+| `PUID`                 | Container user ID                             |
+| `PGID`                 | Container group ID                            |
+| `DB_HOST`              | PostgreSQL hostname                           |
+| `DB_PORT`              | PostgreSQL port                               |
+| `DB_USERNAME`          | PostgreSQL username                           |
+| `DB_PASSWORD`          | PostgreSQL password                           |
+| `DB_DATABASE_NAME`     | PostgreSQL database name                      |
+| `SECRET_KEY`           | Application secret                            |
+| `ADMIN_PASS`           | Initial administrator password                |
+| `INITIAL_ORIGIN`       | Application origin                            |
+| `RECAPTCHA_PROJECT_ID` | Google reCAPTCHA Enterprise project           |
+| `RECAPTCHA_SITE_KEY`   | Google reCAPTCHA site key                     |
+| `RECAPTCHA_API_KEY`    | Google reCAPTCHA API key                      |
+| `DISABLE_RECAPTCHA`    | Disables reCAPTCHA when any value is provided |
 
-SMTP configuration is managed by users through the application.
+### reCAPTCHA
+
+reCAPTCHA is enabled by default.
+
+To disable it, set `DISABLE_RECAPTCHA` to **any value**:
+
+```env
+DISABLE_RECAPTCHA=true
+```
+
+The value itself is not evaluated. The presence of a value disables reCAPTCHA.
+
+SMTP settings are configured by users through the SiSH Form Mailer UI.
 
 ---
 
@@ -430,7 +470,8 @@ For production deployments:
 - Use a unique `SECRET_KEY`.
 - Configure CORS appropriately.
 - Consider enabling reCAPTCHA.
-- Back up the PostgreSQL data directory.
+- Back up the PostgreSQL data.
+- Protect SMTP credentials.
 
 ---
 
@@ -464,29 +505,6 @@ SiSH Form Mailer uses:
 
 ---
 
-# Project Structure
-
-```text
-.
-├── client/              # Frontend application
-├── internal/            # Go backend packages
-├── journey/             # Integration tests
-├── migrations/          # Database migrations
-│
-├── main.go              # Application entry point
-├── Dockerfile           # Production image
-├── Dockerfile.dev       # Backend development image
-├── DockerfileWeb.dev   # Frontend development image
-├── compose.yml          # Docker Compose configuration
-├── entrypoint.sh        # Container entrypoint
-├── .env.example         # Configuration example
-├── go.mod
-├── go.sum
-└── LICENSE
-```
-
----
-
 # Security
 
 SiSH Form Mailer exposes public form endpoints, so abuse prevention is an important part of the application.
@@ -496,16 +514,34 @@ It includes:
 - CORS protection
 - Rate limiting
 - Optional reCAPTCHA support
-- Database-backed submission persistence
+- Persistent database storage
+- Encrypted SMTP credentials
 
-For production deployments, also:
+For production deployments:
 
 - Use HTTPS.
 - Keep PostgreSQL off the public internet.
-- Protect SMTP credentials.
 - Use strong passwords.
+- Protect the application secret.
+- Configure CORS appropriately.
 - Keep the application and dependencies up to date.
-- Monitor logs and email delivery.
+- Monitor application and email-delivery logs.
+- Back up the database.
+
+> **CORS is not authentication.** A form endpoint should be considered publicly reachable even when CORS restrictions are configured. CORS controls browser origins; it does not prevent direct HTTP requests.
+
+---
+
+# Roadmap
+
+SiSH Form Mailer intentionally focuses on being a small, simple solution rather than becoming a full-featured form platform.
+
+Planned or potential future improvements include:
+
+- [ ] Retry failed email deliveries
+- [ ] File uploads
+
+Features are intentionally kept focused on the needs of small developers and self-hosted deployments.
 
 ---
 
@@ -543,5 +579,5 @@ Or simply:
 
 <p align="center">
   <strong>SiSH Form Mailer</strong><br>
-  A fast, simple, self-hosted alternative to hosted form mailers.
+  A fast, simple, self-hosted form backend for small developers.
 </p>
