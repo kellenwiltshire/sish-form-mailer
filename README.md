@@ -10,6 +10,20 @@ Create a form in the SiSH Form Mailer UI, get a unique six-character form code, 
 
 **No custom API routes. No third-party form service. Just a simple form endpoint you can host yourself.**
 
+This project is both a practical self-hosted tool and my journey learning Go by building a real application.
+
+---
+
+## Why I Built This
+
+SiSH Form Mailer started as a project to learn Go.
+
+Rather than learning through tutorials alone, I wanted to build a real application from the ground up. I also intentionally tried to use as little AI assistance as possible so that I would encounter and solve the problems myself.
+
+The repository documents that process alongside the source code, including architectural decisions, challenges, mistakes, and lessons learned throughout development.
+
+So while SiSH Form Mailer is a functional self-hosted form backend, the project is also a record of my journey learning Go by building something real.
+
 ---
 
 ## ✨ Features
