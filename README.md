@@ -528,7 +528,7 @@ cd sish-form-mailer
 The repository includes development Dockerfiles and Docker Compose configuration for running the backend, frontend, and PostgreSQL locally.
 
 ```bash
-docker compose up
+make
 ```
 
 ---
