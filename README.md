@@ -1,3 +1,7 @@
+<p align="center">
+<img width="289" height="288" alt="sish-logo" src="https://github.com/user-attachments/assets/547115f9-d00d-425a-8966-fd9099a03030" />
+</p>
+
 # SiSH Form Mailer
 
 **Simple Self Hosted Form Mailer**
