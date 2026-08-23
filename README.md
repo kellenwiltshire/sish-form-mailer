@@ -211,7 +211,7 @@ DISABLE_RECAPTCHA=
 Start the application:
 
 ```bash
-docker compose up -d
+make
 ```
 
 SiSH Form Mailer will be available on the configured port.
@@ -240,25 +240,48 @@ https://form-mailer.example.com/api/forms/a7K92x
 
 An external website can submit directly to it:
 
-```html
-<form action="https://form-mailer.example.com/api/forms/a7K92x" method="POST">
-  <label>
-    Name
-    <input type="text" name="name" required />
-  </label>
+```javascript
+const handleSubmitForm = async (form: FormData) => {
 
-  <label>
-    Email
-    <input type="email" name="email" required />
-  </label>
+  const formData: FormInformation = Object.fromEntries(
+   form.entries(),
+  ) as FormInformation
 
-  <label>
-    Message
-    <textarea name="message" required></textarea>
-  </label>
+  const { name, email, phone, message } =
+   formData
+  try {
+   const token = await executeRecaptcha('form_submission')
 
-  <button type="submit">Send Message</button>
-</form>
+   const res = await fetch(
+    `https://form-mailer.example.com/api/forms/a7K92x`
+    {
+     method: 'POST',
+     headers: {
+      'Content-Type': 'application/json',
+     },
+     body: JSON.stringify({
+      payload: {
+       name,
+       email,
+       phone,
+       message,
+      },
+      token,
+     }),
+    },
+   )
+
+   if (!res.ok) {
+    throw new Error(`Form submission failed: ${res.status}`)
+   }
+
+   setFormStateCompleted(true)
+  } catch (err) {
+   console.error(err)
+    // Any other error handling on UI side
+  }
+ }
+
 ```
 
 The website does not need its own backend.
