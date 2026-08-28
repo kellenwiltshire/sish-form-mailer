@@ -25,18 +25,7 @@ func Front(r chi.Router) {
 
 	fileServer := http.FileServer(http.FS(staticFiles))
 
-	r.Handle("/*", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		path := strings.TrimPrefix(req.URL.Path, "/")
-
-		if path != "" {
-			if _, err := fs.Stat(staticFiles, path); err == nil {
-				fileServer.ServeHTTP(w, req)
-				return
-			}
-		}
-
-		req.URL.Path = "/index.html"
-		fileServer.ServeHTTP(w, req)
-	}))
+	r.Handle("/*", fileServer)
+	
 	log.Println("Serving production static files from embedded filesystem")
 }
