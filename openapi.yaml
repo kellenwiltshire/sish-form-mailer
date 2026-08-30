@@ -1,0 +1,948 @@
+openapi: 3.0.3
+info:
+  title: SiSH Form Mailer API
+  version: 1.0.0
+  description: HTTP API for SiSH Form Mailer, a self-hosted form backend that accepts
+    form submissions, stores responses, and forwards submissions through configurable
+    SMTP settings.
+servers:
+- url: https://form-mailer.example.com/api
+  description: Example deployment URL; replace with the actual installation URL.
+tags:
+- name: Authentication
+- name: User
+- name: Forms
+- name: Submissions
+- name: SMTP Settings
+- name: Allowed Origins
+- name: Administration
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sish-form-mailer-auth
+      description: HTTP-only authentication cookie set after successful login.
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum:
+          - user
+          - admin
+          - super_admin
+        created_at:
+          type: string
+          format: date-time
+        num_forms:
+          type: integer
+          format: int32
+      required:
+      - id
+      - email
+      - role
+      - created_at
+      - num_forms
+    Form:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        target_email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - user_id
+      - name
+      - target_email
+      - created_at
+    Submission:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        form_id:
+          type: string
+        payload:
+          type: string
+          description: JSON-encoded submitted form data.
+        submitted_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - received
+          - spam
+          - error
+        error_reason:
+          type: string
+      required:
+      - id
+      - form_id
+      - payload
+      - submitted_at
+      - status
+      - error_reason
+    SMTPSettings:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        host:
+          type: string
+        port:
+          type: integer
+          format: int32
+        username:
+          type: string
+        encryption_type:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+        recipient_email:
+          type: string
+          format: email
+        sender_email:
+          type: string
+          format: email
+      required:
+      - id
+      - user_id
+      - host
+      - port
+      - username
+      - encryption_type
+      - updated_at
+      - recipient_email
+      - sender_email
+    Origin:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        origin:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - user_id
+      - origin
+      - created_at
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate a user
+      tags:
+      - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                remember:
+                  type: boolean
+                  default: false
+              required:
+              - email
+              - password
+      responses:
+        '201':
+          description: Authenticated; the server also sets the authentication cookie.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_token:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                    required:
+                    - token
+                required:
+                - auth_token
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid credentials or login lockout
+  /auth/logout:
+    get:
+      summary: Log out the current user
+      tags:
+      - Authentication
+      security: &id001
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Logged out; no response body.
+        '401':
+          description: Unauthenticated
+  /auth/forgot-password:
+    get:
+      summary: Reset the super-admin password
+      tags:
+      - Authentication
+      security: []
+      parameters:
+      - name: admin_pass
+        in: query
+        required: true
+        schema:
+          type: string
+          format: password
+        description: Configured ADMIN_PASS value.
+      responses:
+        '200':
+          description: Request processed
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+      description: 'Resets the super-admin password using the configured ADMIN_PASS.
+        Security note: the password is supplied in the URL query string.'
+  /user:
+    get:
+      summary: Get the current user
+      tags:
+      - User
+      security: *id001
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                required:
+                - user
+        '401':
+          description: Unauthenticated
+    put:
+      summary: Update the current user
+      tags:
+      - User
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: integer
+                required:
+                - user
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+  /forms:
+    get:
+      summary: List forms belonging to the authenticated user
+      tags:
+      - Forms
+      security: *id001
+      responses:
+        '200':
+          description: Forms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  forms:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Form'
+                required:
+                - forms
+        '401':
+          description: Unauthenticated
+    post:
+      summary: Create a form
+      tags:
+      - Forms
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                target_email:
+                  type: string
+                  format: email
+              required:
+              - name
+              - target_email
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  form:
+                    $ref: '#/components/schemas/Form'
+                required:
+                - form
+        '400':
+          description: Missing or invalid required fields
+        '401':
+          description: Unauthenticated
+  /forms/{form_id}:
+    parameters:
+    - name: form_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Get a form
+      tags:
+      - Forms
+      security: *id001
+      responses:
+        '200':
+          description: Form
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  form:
+                    $ref: '#/components/schemas/Form'
+                required:
+                - form
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Form not found
+    put:
+      summary: Update a form
+      tags:
+      - Forms
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                target_email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  form:
+                    type: string
+                required:
+                - form
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Form not found
+    delete:
+      summary: Delete a form
+      tags:
+      - Forms
+      security: *id001
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Form not found
+  /forms/{form_id}/responses:
+    parameters:
+    - name: form_id
+      in: path
+      required: true
+      schema:
+        type: string
+    post:
+      summary: Submit a form
+      tags:
+      - Submissions
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payload:
+                  type: object
+                  additionalProperties: true
+                token:
+                  type: string
+                  description: reCAPTCHA token when reCAPTCHA is enabled.
+              required:
+              - payload
+      responses:
+        '201':
+          description: Submission accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                required:
+                - status
+        '400':
+          description: Invalid submission payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      description: Public submission endpoint. Authentication is not required. The
+        payload may contain arbitrary JSON. reCAPTCHA is enabled by default unless
+        DISABLE_RECAPTCHA is configured; failed validation records the submission
+        as spam.
+    get:
+      summary: List submissions for a form
+      tags:
+      - Submissions
+      security: *id001
+      responses:
+        '200':
+          description: Submissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  submissions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Submission'
+                required:
+                - submissions
+        '401':
+          description: Unauthenticated or unauthorized
+        '404':
+          description: Form not found
+  /forms/{form_id}/responses/{submission_id}:
+    parameters:
+    - name: form_id
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: submission_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    get:
+      summary: Get a submission
+      tags:
+      - Submissions
+      security: *id001
+      responses:
+        '200':
+          description: Submission
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  submission:
+                    $ref: '#/components/schemas/Submission'
+                required:
+                - submission
+        '401':
+          description: Unauthenticated or unauthorized
+        '404':
+          description: Submission not found
+    delete:
+      summary: Delete a submission
+      tags:
+      - Submissions
+      security: *id001
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Unauthenticated or unauthorized
+        '404':
+          description: Submission not found
+  /email-settings:
+    get:
+      summary: Get current SMTP settings
+      tags:
+      - SMTP Settings
+      security: *id001
+      responses:
+        '200':
+          description: SMTP settings; may be null when not configured.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  smtp:
+                    oneOf:
+                    - $ref: '#/components/schemas/SMTPSettings'
+                    - type: 'null'
+                required:
+                - smtp
+        '401':
+          description: Unauthenticated
+    post:
+      summary: Create SMTP settings
+      tags:
+      - SMTP Settings
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                host:
+                  type: string
+                port:
+                  type: integer
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                encryption_type:
+                  type: string
+                recipient_email:
+                  type: string
+                  format: email
+                sender_email:
+                  type: string
+                  format: email
+              required:
+              - host
+              - port
+              - username
+              - password
+              - recipient_email
+              - sender_email
+      responses:
+        '201':
+          description: Created; password is never returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  smtp:
+                    $ref: '#/components/schemas/SMTPSettings'
+                required:
+                - smtp
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated
+    put:
+      summary: Update SMTP settings
+      tags:
+      - SMTP Settings
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                host:
+                  type: string
+                port:
+                  type: integer
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                encryption_type:
+                  type: string
+                recipient_email:
+                  type: string
+                  format: email
+                sender_email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  smtp:
+                    type: integer
+                required:
+                - smtp
+        '401':
+          description: Unauthenticated
+        '404':
+          description: SMTP configuration not found
+    delete:
+      summary: Delete SMTP settings
+      tags:
+      - SMTP Settings
+      security: *id001
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Unauthenticated
+        '404':
+          description: SMTP configuration not found
+  /email-settings/test:
+    get:
+      summary: Send a test email
+      tags:
+      - SMTP Settings
+      security: *id001
+      responses:
+        '200':
+          description: Test email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  test:
+                    type: string
+                    example: success
+                required:
+                - test
+        '401':
+          description: Unauthenticated
+        '500':
+          description: SMTP/test email failure
+  /origins:
+    get:
+      summary: List allowed origins
+      tags:
+      - Allowed Origins
+      security: *id001
+      responses:
+        '200':
+          description: Origins
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  origins:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Origin'
+                required:
+                - origins
+        '401':
+          description: Unauthenticated
+    post:
+      summary: Add an allowed origin
+      tags:
+      - Allowed Origins
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                origin:
+                  type: string
+                  format: uri
+              required:
+              - origin
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  origin:
+                    $ref: '#/components/schemas/Origin'
+                required:
+                - origin
+        '400':
+          description: Invalid origin
+        '401':
+          description: Unauthenticated
+  /origins/{origin_id}:
+    parameters:
+    - name: origin_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    delete:
+      summary: Remove an allowed origin
+      tags:
+      - Allowed Origins
+      security: *id001
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Origin not found
+  /admin/getUsers:
+    get:
+      summary: List users
+      tags:
+      - Administration
+      security: *id001
+      description: Requires an authenticated administrator.
+      responses:
+        '200':
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                required:
+                - users
+        '401':
+          description: Unauthenticated or insufficient privileges
+  /admin/createUser:
+    post:
+      summary: Create a user
+      tags:
+      - Administration
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                role:
+                  type: string
+                  enum:
+                  - user
+                  - admin
+                  - super_admin
+              required:
+              - email
+              - password
+              - role
+      responses:
+        '201':
+          description: Created; password is never returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                required:
+                - user
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated or insufficient privileges
+  /admin/editUser/{id}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    put:
+      summary: Update a user
+      tags:
+      - Administration
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                role:
+                  type: string
+                  enum:
+                  - user
+                  - admin
+                  - super_admin
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: integer
+                required:
+                - user
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthenticated or insufficient privileges
+        '403':
+          description: Regular administrators cannot modify super-admin accounts
+        '404':
+          description: User not found
+  /admin/deleteUser/{id}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    delete:
+      summary: Delete a user
+      tags:
+      - Administration
+      security: *id001
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Unauthenticated or insufficient privileges
+        '403':
+          description: Administrative role restrictions apply
+        '404':
+          description: User not found
+externalDocs:
+  description: Repository implementation reference
+  url: https://github.com/example/sish-form-mailer
+x-notes:
+- Authentication uses an HTTP-only cookie rather than a Bearer token.
+- Form submission is intentionally unauthenticated.
+- Form submission payloads are arbitrary JSON.
+- reCAPTCHA is enabled unless explicitly disabled.
+- SMTP passwords are encrypted at rest and never returned through the API.
+- Users can only access their own forms and submissions.
+- CORS is tied to configured origins or INITIAL_ORIGIN.
+- Public submissions and authenticated API requests are rate limited.
+- Error response formats are not completely consistent between handlers.
+- There is currently no OpenAPI/Swagger specification included with the project; this
+  file is derived from the supplied documentation.
+- A commented-out user deletion route is not considered part of the public API unless
+  registered in internal/routes.
