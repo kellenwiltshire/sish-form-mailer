@@ -182,7 +182,6 @@ services:
       - RECAPTCHA_PROJECT_ID=${RECAPTCHA_PROJECT_ID}
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
       - RECAPTCHA_API_KEY=${RECAPTCHA_API_KEY}
-      ## - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA} - OPTIONAL - ONLY SET A VALUE IF YOU WISH TO DISABLE RECAPTCHA
     restart: unless-stopped
 ```
 
@@ -209,7 +208,6 @@ INITIAL_ORIGIN=https://form-mailer.example.com
 RECAPTCHA_PROJECT_ID=
 RECAPTCHA_SITE_KEY=
 RECAPTCHA_API_KEY=
-DISABLE_RECAPTCHA=
 ```
 
 Start the application:
@@ -222,7 +220,7 @@ SiSH Form Mailer will be available on the configured port.
 
 > **Important:** Change `DB_PASSWORD`, `SECRET_KEY`, and `ADMIN_PASS` before using SiSH Form Mailer in production.
 >
-> reCAPTCHA is enabled by default. To disable it, set DISABLE_RECAPTCHA to any value (for example, DISABLE_RECAPTCHA=true). The actual value is not evaluated; only whether the variable is set matters.
+> To disable reCAPTCHA, simply do not set RECAPTCHA_PROJECT_ID or RECAPTCHA_API_KEY in your env variables
 
 ---
 
@@ -429,36 +427,29 @@ Automatic retry of failed email delivery is planned for a future release and is 
 
 SiSH Form Mailer is configured through environment variables.
 
-| Variable               | Description                                   |
-| ---------------------- | --------------------------------------------- |
-| `PORT`                 | HTTP port                                     |
-| `TZ`                   | Application/container timezone                |
-| `PUID`                 | Container user ID                             |
-| `PGID`                 | Container group ID                            |
-| `DB_HOST`              | PostgreSQL hostname                           |
-| `DB_PORT`              | PostgreSQL port                               |
-| `DB_USERNAME`          | PostgreSQL username                           |
-| `DB_PASSWORD`          | PostgreSQL password                           |
-| `DB_DATABASE_NAME`     | PostgreSQL database name                      |
-| `SECRET_KEY`           | Application secret                            |
-| `ADMIN_PASS`           | Initial administrator password                |
-| `INITIAL_ORIGIN`       | Application origin                            |
-| `RECAPTCHA_PROJECT_ID` | Google reCAPTCHA Enterprise project           |
-| `RECAPTCHA_SITE_KEY`   | Google reCAPTCHA site key                     |
-| `RECAPTCHA_API_KEY`    | Google reCAPTCHA API key                      |
-| `DISABLE_RECAPTCHA`    | Disables reCAPTCHA when any value is provided |
+| Variable               | Description                         |
+| ---------------------- | ----------------------------------- |
+| `PORT`                 | HTTP port                           |
+| `TZ`                   | Application/container timezone      |
+| `PUID`                 | Container user ID                   |
+| `PGID`                 | Container group ID                  |
+| `DB_HOST`              | PostgreSQL hostname                 |
+| `DB_PORT`              | PostgreSQL port                     |
+| `DB_USERNAME`          | PostgreSQL username                 |
+| `DB_PASSWORD`          | PostgreSQL password                 |
+| `DB_DATABASE_NAME`     | PostgreSQL database name            |
+| `SECRET_KEY`           | Application secret                  |
+| `ADMIN_PASS`           | Initial administrator password      |
+| `INITIAL_ORIGIN`       | Application origin                  |
+| `RECAPTCHA_PROJECT_ID` | Google reCAPTCHA Enterprise project |
+| `RECAPTCHA_SITE_KEY`   | Google reCAPTCHA site key           |
+| `RECAPTCHA_API_KEY`    | Google reCAPTCHA API key            |
 
 ### reCAPTCHA
 
 reCAPTCHA is enabled by default.
 
-To disable it, set `DISABLE_RECAPTCHA` to **any value**:
-
-```env
-DISABLE_RECAPTCHA=true
-```
-
-The value itself is not evaluated. The presence of a value disables reCAPTCHA.
+To disable it, do not set values for RECAPTCHA_PROJECT_ID and RECAPTCHA_API_KEY
 
 SMTP settings are configured by users through the SiSH Form Mailer UI.
 

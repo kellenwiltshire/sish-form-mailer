@@ -51,7 +51,7 @@ const EmailPage = () => {
 			button={
 				smtp ? (
 					<div className='flex flex-row justify-end gap-3'>
-						<Button variant='ghost' onClick={() => handleDeleteSMTP()}>
+						<Button variant='danger' onClick={() => handleDeleteSMTP()}>
 							Delete
 						</Button>
 						<Button onClick={() => setUpdateSettingsOpen((p) => !p)}>

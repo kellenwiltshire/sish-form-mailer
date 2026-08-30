@@ -13,7 +13,7 @@ const Button = ({ children, variant = 'standard', ...props }: ButtonProps) => {
 			case 'danger':
 				return 'inline-flex cursor-pointer justify-center rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-700/90 focus-visible:outline-2 focus-visible:outline-offset-2'
 			case 'ghost':
-				return 'inline-flex cursor-pointer justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-text shadow-xs inset-ring-1 inset-ring-ring hover:bg-hover sm:col-start-1 sm:mt-0'
+				return 'inline-flex cursor-pointer justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-text shadow-xs hover:bg-gray-100 sm:col-start-1 sm:mt-0'
 			case 'standard':
 			default:
 				return 'inline-flex cursor-pointer justify-center rounded-md bg-[#4f46e5] px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#4f46e5]/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4f46e5]'

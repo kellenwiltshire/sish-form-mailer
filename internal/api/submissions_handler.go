@@ -80,9 +80,16 @@ func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *htt
 	}
 	var submissionRequest registerSubmissionRequest
 
-	isRecaptchaEnabled := os.Getenv("DISABLE_RECAPTCHA") == ""
+	projectID := os.Getenv("RECAPTCHA_PROJECT_ID")
+	apiKey := os.Getenv("RECAPTCHA_API_KEY")
 
-	h.logger.Printf("isRecaptchaEnabled: ", isRecaptchaEnabled)
+	var isRecaptchaEnabled bool
+
+	if projectID == "" || apiKey == "" {
+		isRecaptchaEnabled = false
+	} else {
+		isRecaptchaEnabled = true
+	}
 
 	err := json.NewDecoder(r.Body).Decode(&submissionRequest)
 	if err != nil {
