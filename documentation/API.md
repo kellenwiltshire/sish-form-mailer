@@ -71,20 +71,20 @@ There is no requirement to send a Bearer token in the `Authorization` header.
 
 ### Authentication Roles
 
-| Role | Description |
-|---|---|
-| `user` | Standard authenticated user |
-| `admin` | Administrator |
-| `super_admin` | Super administrator |
+| Role          | Description                 |
+| ------------- | --------------------------- |
+| `user`        | Standard authenticated user |
+| `admin`       | Administrator               |
+| `super_admin` | Super administrator         |
 
 Admin endpoints require an authenticated user with appropriate administrative privileges.
 
 ### Token Lifetime
 
 | `remember` | Lifetime |
-|---|---|
-| `false` | 24 hours |
-| `true` | 30 days |
+| ---------- | -------- |
+| `false`    | 24 hours |
+| `true`     | 30 days  |
 
 ### Authentication Errors
 
@@ -96,34 +96,34 @@ Unauthenticated requests to protected endpoints return:
 
 ## API Overview
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/auth/login` | Public | Authenticate a user |
-| `GET` | `/api/auth/logout` | User | Log out |
-| `GET` | `/api/auth/forgot-password` | Public | Reset the super-admin password |
-| `GET` | `/api/user` | User | Get the current user |
-| `PUT` | `/api/user` | User | Update the current user |
-| `GET` | `/api/forms` | User | List forms |
-| `POST` | `/api/forms` | User | Create a form |
-| `GET` | `/api/forms/{form_id}` | User | Get a form |
-| `PUT` | `/api/forms/{form_id}` | User | Update a form |
-| `DELETE` | `/api/forms/{form_id}` | User | Delete a form |
-| `POST` | `/api/forms/{form_id}` | Public | Submit a form |
-| `GET` | `/api/forms/{form_id}/responses` | User | List submissions |
-| `GET` | `/api/forms/{form_id}/responses/{submission_id}` | User | Get a submission |
-| `DELETE` | `/api/forms/{form_id}/responses/{submission_id}` | User | Delete a submission |
-| `GET` | `/api/email-settings` | User | Get SMTP settings |
-| `POST` | `/api/email-settings` | User | Create SMTP settings |
-| `PUT` | `/api/email-settings` | User | Update SMTP settings |
-| `DELETE` | `/api/email-settings` | User | Delete SMTP settings |
-| `GET` | `/api/email-settings/test` | User | Send a test email |
-| `GET` | `/api/origins` | User | List allowed origins |
-| `POST` | `/api/origins` | User | Add an allowed origin |
-| `DELETE` | `/api/origins/{origin_id}` | User | Remove an allowed origin |
-| `GET` | `/api/admin/getUsers` | Admin | List users |
-| `POST` | `/api/admin/createUser` | Admin | Create a user |
-| `PUT` | `/api/admin/editUser/{id}` | Admin | Update a user |
-| `DELETE` | `/api/admin/deleteUser/{id}` | Admin | Delete a user |
+| Method   | Endpoint                                         | Auth   | Description                    |
+| -------- | ------------------------------------------------ | ------ | ------------------------------ |
+| `POST`   | `/api/auth/login`                                | Public | Authenticate a user            |
+| `GET`    | `/api/auth/logout`                               | User   | Log out                        |
+| `GET`    | `/api/auth/forgot-password`                      | Public | Reset the super-admin password |
+| `GET`    | `/api/user`                                      | User   | Get the current user           |
+| `PUT`    | `/api/user`                                      | User   | Update the current user        |
+| `GET`    | `/api/forms`                                     | User   | List forms                     |
+| `POST`   | `/api/forms`                                     | User   | Create a form                  |
+| `GET`    | `/api/forms/{form_id}`                           | User   | Get a form                     |
+| `PUT`    | `/api/forms/{form_id}`                           | User   | Update a form                  |
+| `DELETE` | `/api/forms/{form_id}`                           | User   | Delete a form                  |
+| `POST`   | `/api/forms/{form_id}`                           | Public | Submit a form                  |
+| `GET`    | `/api/forms/{form_id}/responses`                 | User   | List submissions               |
+| `GET`    | `/api/forms/{form_id}/responses/{submission_id}` | User   | Get a submission               |
+| `DELETE` | `/api/forms/{form_id}/responses/{submission_id}` | User   | Delete a submission            |
+| `GET`    | `/api/email-settings`                            | User   | Get SMTP settings              |
+| `POST`   | `/api/email-settings`                            | User   | Create SMTP settings           |
+| `PUT`    | `/api/email-settings`                            | User   | Update SMTP settings           |
+| `DELETE` | `/api/email-settings`                            | User   | Delete SMTP settings           |
+| `GET`    | `/api/email-settings/test`                       | User   | Send a test email              |
+| `GET`    | `/api/origins`                                   | User   | List allowed origins           |
+| `POST`   | `/api/origins`                                   | User   | Add an allowed origin          |
+| `DELETE` | `/api/origins/{origin_id}`                       | User   | Remove an allowed origin       |
+| `GET`    | `/api/admin/getUsers`                            | Admin  | List users                     |
+| `POST`   | `/api/admin/createUser`                          | Admin  | Create a user                  |
+| `PUT`    | `/api/admin/editUser/{id}`                       | Admin  | Update a user                  |
+| `DELETE` | `/api/admin/deleteUser/{id}`                     | Admin  | Delete a user                  |
 
 ## Authentication Endpoints
 
@@ -143,11 +143,11 @@ Authenticates a user and creates an authentication token.
 
 #### Request Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `email` | string | Yes | User email address |
-| `password` | string | Yes | User password |
-| `remember` | boolean | No | Extend the authentication token lifetime to 30 days |
+| Field      | Type    | Required | Description                                         |
+| ---------- | ------- | -------- | --------------------------------------------------- |
+| `email`    | string  | Yes      | User email address                                  |
+| `password` | string  | Yes      | User password                                       |
+| `remember` | boolean | No       | Extend the authentication token lifetime to 30 days |
 
 #### Response
 
@@ -197,9 +197,9 @@ Resets the super-admin password using the configured `ADMIN_PASS`.
 
 #### Query Parameters
 
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `admin_pass` | string | Yes | The configured `ADMIN_PASS` value |
+| Parameter    | Type   | Required | Description                       |
+| ------------ | ------ | -------- | --------------------------------- |
+| `admin_pass` | string | Yes      | The configured `ADMIN_PASS` value |
 
 #### Example
 
@@ -254,10 +254,10 @@ Updates the currently authenticated user's account.
 
 #### Request Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `email` | string | No | New email address |
-| `password` | string | No | New password |
+| Field      | Type   | Required | Description       |
+| ---------- | ------ | -------- | ----------------- |
+| `email`    | string | No       | New email address |
+| `password` | string | No       | New password      |
 
 Both fields are optional.
 
@@ -332,10 +332,10 @@ Required.
 
 #### Request Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `name` | string | Yes | Human-readable form name |
-| `target_email` | string | Yes | Email address that receives submissions |
+| Field          | Type   | Required | Description                             |
+| -------------- | ------ | -------- | --------------------------------------- |
+| `name`         | string | Yes      | Human-readable form name                |
+| `target_email` | string | Yes      | Email address that receives submissions |
 
 The authenticated user's ID is assigned automatically.
 
@@ -371,8 +371,8 @@ Required.
 
 #### Path Parameters
 
-| Parameter | Type | Description |
-|---|---|---|
+| Parameter | Type   | Description    |
+| --------- | ------ | -------------- |
 | `form_id` | string | Unique form ID |
 
 #### Response
@@ -403,8 +403,8 @@ Required.
 
 #### Path Parameters
 
-| Parameter | Type | Description |
-|---|---|---|
+| Parameter | Type   | Description    |
+| --------- | ------ | -------------- |
 | `form_id` | string | Unique form ID |
 
 #### Request
@@ -418,10 +418,10 @@ Required.
 
 #### Request Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `name` | string | No | New form name |
-| `target_email` | string | No | New destination email |
+| Field          | Type   | Required | Description           |
+| -------------- | ------ | -------- | --------------------- |
+| `name`         | string | No       | New form name         |
+| `target_email` | string | No       | New destination email |
 
 #### Response
 
@@ -443,8 +443,8 @@ Required.
 
 #### Path Parameters
 
-| Parameter | Type | Description |
-|---|---|---|
+| Parameter | Type   | Description    |
+| --------- | ------ | -------------- |
 | `form_id` | string | Unique form ID |
 
 #### Response
@@ -475,8 +475,8 @@ Not required.
 
 #### Path Parameters
 
-| Parameter | Type | Description |
-|---|---|---|
+| Parameter | Type   | Description    |
+| --------- | ------ | -------------- |
 | `form_id` | string | Unique form ID |
 
 #### Request
@@ -495,10 +495,10 @@ The payload can contain arbitrary JSON.
 
 #### Request Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `payload` | object | Yes | Form submission data |
-| `token` | string | Conditional | reCAPTCHA token when reCAPTCHA is enabled |
+| Field     | Type   | Required    | Description                               |
+| --------- | ------ | ----------- | ----------------------------------------- |
+| `payload` | object | Yes         | Form submission data                      |
+| `token`   | string | Conditional | reCAPTCHA token when reCAPTCHA is enabled |
 
 #### With reCAPTCHA
 
@@ -584,10 +584,10 @@ Required.
 
 #### Path Parameters
 
-| Parameter | Type | Description |
-|---|---|---|
-| `form_id` | string | Unique form ID |
-| `submission_id` | integer | Submission ID |
+| Parameter       | Type    | Description    |
+| --------------- | ------- | -------------- |
+| `form_id`       | string  | Unique form ID |
+| `submission_id` | integer | Submission ID  |
 
 #### Response
 
@@ -694,15 +694,15 @@ Creates SMTP settings.
 
 #### Request Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `host` | string | Yes | SMTP server hostname |
-| `port` | integer | Yes | SMTP server port |
-| `username` | string | Yes | SMTP username |
-| `password` | string | Yes | SMTP password |
-| `encryption_type` | string | No | SMTP encryption type |
-| `recipient_email` | string | Yes | Submission recipient |
-| `sender_email` | string | Yes | Submission sender |
+| Field             | Type    | Required | Description          |
+| ----------------- | ------- | -------- | -------------------- |
+| `host`            | string  | Yes      | SMTP server hostname |
+| `port`            | integer | Yes      | SMTP server port     |
+| `username`        | string  | Yes      | SMTP username        |
+| `password`        | string  | Yes      | SMTP password        |
+| `encryption_type` | string  | No       | SMTP encryption type |
+| `recipient_email` | string  | Yes      | Submission recipient |
+| `sender_email`    | string  | Yes      | Submission sender    |
 
 #### Response
 
@@ -853,9 +853,9 @@ Removes an allowed origin.
 
 #### Path Parameters
 
-| Parameter | Type | Description |
-|---|---|---|
-| `origin_id` | integer | Origin ID |
+| Parameter   | Type    | Description |
+| ----------- | ------- | ----------- |
+| `origin_id` | integer | Origin ID   |
 
 #### Response
 
@@ -909,11 +909,11 @@ Creates a user.
 
 #### Request Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `email` | string | Yes | User email |
-| `password` | string | Yes | User password |
-| `role` | string | Yes | User role |
+| Field      | Type   | Required | Description   |
+| ---------- | ------ | -------- | ------------- |
+| `email`    | string | Yes      | User email    |
+| `password` | string | Yes      | User password |
+| `role`     | string | Yes      | User role     |
 
 #### Valid Roles
 
@@ -944,9 +944,9 @@ Updates an existing user.
 
 #### Path Parameters
 
-| Parameter | Type | Description |
-|---|---|---|
-| `id` | integer | User ID |
+| Parameter | Type    | Description |
+| --------- | ------- | ----------- |
+| `id`      | integer | User ID     |
 
 #### Request
 
@@ -982,9 +982,9 @@ Deletes a user.
 
 #### Path Parameters
 
-| Parameter | Type | Description |
-|---|---|---|
-| `id` | integer | User ID |
+| Parameter | Type    | Description |
+| --------- | ------- | ----------- |
+| `id`      | integer | User ID     |
 
 #### Response
 
@@ -1054,16 +1054,16 @@ CORS preflight responses are cached for approximately five minutes.
 
 ## HTTP Status Codes
 
-| Status | Meaning |
-|---|---|
-| `200` | Request completed successfully |
-| `201` | Resource created successfully |
-| `204` | Request completed successfully with no response body |
-| `400` | Invalid request or validation error |
-| `401` | Authentication or authorization failure |
-| `404` | Resource not found |
-| `429` | Rate limit exceeded |
-| `500` | Internal server error |
+| Status | Meaning                                              |
+| ------ | ---------------------------------------------------- |
+| `200`  | Request completed successfully                       |
+| `201`  | Resource created successfully                        |
+| `204`  | Request completed successfully with no response body |
+| `400`  | Invalid request or validation error                  |
+| `401`  | Authentication or authorization failure              |
+| `404`  | Resource not found                                   |
+| `429`  | Rate limit exceeded                                  |
+| `500`  | Internal server error                                |
 
 > **Note:** Error responses are not completely uniform. Most handlers return JSON errors, while some errors are returned as plain text using `http.Error`. Clients should not assume every non-2xx response contains JSON.
 
@@ -1081,13 +1081,13 @@ CORS preflight responses are cached for approximately five minutes.
 }
 ```
 
-| Field | Type | Description |
-|---|---|---|
-| `id` | integer | User ID |
-| `email` | string | Email address |
-| `role` | string | User role |
-| `created_at` | string | Account creation timestamp |
-| `num_forms` | integer | Number of forms owned by the user |
+| Field        | Type    | Description                       |
+| ------------ | ------- | --------------------------------- |
+| `id`         | integer | User ID                           |
+| `email`      | string  | Email address                     |
+| `role`       | string  | User role                         |
+| `created_at` | string  | Account creation timestamp        |
+| `num_forms`  | integer | Number of forms owned by the user |
 
 ### Form
 
@@ -1101,13 +1101,13 @@ CORS preflight responses are cached for approximately five minutes.
 }
 ```
 
-| Field | Type | Description |
-|---|---|---|
-| `id` | string | Unique form ID |
-| `user_id` | integer | Owning user |
-| `name` | string | Form name |
-| `target_email` | string | Submission destination |
-| `created_at` | string | Creation timestamp |
+| Field          | Type    | Description            |
+| -------------- | ------- | ---------------------- |
+| `id`           | string  | Unique form ID         |
+| `user_id`      | integer | Owning user            |
+| `name`         | string  | Form name              |
+| `target_email` | string  | Submission destination |
+| `created_at`   | string  | Creation timestamp     |
 
 ### Submission
 
@@ -1122,14 +1122,14 @@ CORS preflight responses are cached for approximately five minutes.
 }
 ```
 
-| Field | Type | Description |
-|---|---|---|
-| `id` | integer | Submission ID |
-| `form_id` | string | Associated form |
-| `payload` | string | Submitted JSON data |
-| `submitted_at` | string | Submission timestamp |
-| `status` | string | Processing status |
-| `error_reason` | string | Error information, if applicable |
+| Field          | Type    | Description                      |
+| -------------- | ------- | -------------------------------- |
+| `id`           | integer | Submission ID                    |
+| `form_id`      | string  | Associated form                  |
+| `payload`      | string  | Submitted JSON data              |
+| `submitted_at` | string  | Submission timestamp             |
+| `status`       | string  | Processing status                |
+| `error_reason` | string  | Error information, if applicable |
 
 Common statuses include:
 
@@ -1302,8 +1302,6 @@ The handler implementations in `internal/api` are the authoritative source for r
 - CORS is tied to configured origins.
 - Public submissions and authenticated API requests are rate limited.
 - Error response formats are not completely consistent between handlers.
-- There is currently no OpenAPI/Swagger specification included with the project.
-- A commented-out user deletion route is not considered part of the public API unless it is registered in `internal/routes`.
 
 ## License
 

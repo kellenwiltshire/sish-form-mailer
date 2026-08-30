@@ -35,7 +35,6 @@ func Routes(app *app.Application) *chi.Mux {
 		// User Routes
 		r.Get("/api/user", app.AuthMiddleware.RequireUser(app.UserHandler.HandleGetUser))
 		r.Put("/api/user", app.AuthMiddleware.RequireUser(app.UserHandler.HandleUpdateUser))
-		// r.Delete("/api/user", app.AuthMiddleware.RequireUser(app.UserHandler.HandleDeleteUser))
 
 		// Form Routes
 		r.Get("/api/forms/{form_id}", app.AuthMiddleware.RequireUser(app.FormHandler.HandleGetForm))
