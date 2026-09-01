@@ -8,7 +8,10 @@ import PageLayout from '@/Layout/PageLayout'
 import Button from '@/components/UI/Button'
 import Submissions from './Submissions'
 import { useAppDispatch } from '@/redux/hooks'
-import { updateAddFormModalOpen } from '@/redux/modalSlice/modalSlice'
+import {
+	updateAddFormModalOpen,
+	updateSelectedForm,
+} from '@/redux/modalSlice/modalSlice'
 
 type FormsResponse = {
 	forms: Form[]
@@ -56,7 +59,10 @@ const FormsPage = () => {
 									<div className='flex items-center gap-x-3'>
 										<h2 className='min-w-0 text-sm/6 font-semibold text-gray-900'>
 											<button
-												onClick={() => setSelectedFormId(form.id)}
+												onClick={() => {
+													setSelectedFormId(form.id)
+													dispatch(updateSelectedForm(form))
+												}}
 												className='cursor-pointer'
 											>
 												<span className='truncate'>
