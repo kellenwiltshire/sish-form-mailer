@@ -1,8 +1,5 @@
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import {
-	updateAddFormModalOpen,
-	updateEditFormModalOpen,
-} from '@/redux/modalSlice/modalSlice'
+import { updateEditFormModalOpen } from '@/redux/modalSlice/modalSlice'
 import {
 	Dialog,
 	DialogPanel,
@@ -48,7 +45,7 @@ const EditFormModal = () => {
 			})
 			.finally(() => {
 				mutate('/api/forms')
-				dispatch(updateAddFormModalOpen(false))
+				dispatch(updateEditFormModalOpen(false))
 			})
 	}
 
@@ -57,7 +54,7 @@ const EditFormModal = () => {
 			<Dialog
 				as='div'
 				className='relative z-99'
-				onClose={() => dispatch(updateAddFormModalOpen(false))}
+				onClose={() => dispatch(updateEditFormModalOpen(false))}
 			>
 				<TransitionChild
 					as={Fragment}

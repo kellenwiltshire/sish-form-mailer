@@ -85,7 +85,7 @@ const SubmissionsTable = ({
 						<th
 							key={head}
 							scope='col'
-							className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900'
+							className='max-w-50 py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900'
 						>
 							{head}
 						</th>
@@ -119,7 +119,7 @@ const SubmissionsTable = ({
 									{headers.map((h) => (
 										<td
 											key={h}
-											className='max-w-3xs px-3 py-4 text-sm text-wrap text-gray-500'
+											className='max-w-50 px-3 py-4 text-sm text-wrap text-gray-500'
 										>
 											{String(payload[h] ?? '')}
 										</td>
@@ -165,22 +165,25 @@ const SubmissionsTable = ({
 									{headers.map((h) => (
 										<td
 											key={h}
-											className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'
+											className='max-w-50 px-3 py-4 text-sm text-wrap text-gray-500'
 										>
 											{String(payload[h] ?? '')}
 										</td>
 									))}
-									<td
-										className={classNames(
-											'rounded px-3 py-4 text-sm whitespace-nowrap text-black',
-											submission.status === 'error'
-												? 'bg-red-500'
-												: submission.status === 'received'
-													? 'bg-yellow-500'
-													: 'bg-green-500 text-white',
-										)}
-									>
-										{submission.status}
+									<td>
+										{' '}
+										<div
+											className={classNames(
+												'rounded-full py-2 text-center text-sm whitespace-nowrap text-black',
+												submission.status === 'error'
+													? 'bg-red-500'
+													: submission.status === 'received'
+														? 'bg-yellow-500'
+														: 'bg-green-500 text-white',
+											)}
+										>
+											{submission.status}
+										</div>
 									</td>
 									<td className='px-3 py-4 text-sm whitespace-nowrap text-gray-500'>
 										{submission.error_reason}
