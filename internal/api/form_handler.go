@@ -118,8 +118,8 @@ func (h *FormHandler) HandleUpdateForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var updateForm struct {
-		Name        *string `json:"name"`
-		TargetEmail *string `json:"target_email"`
+		Name        string `json:"name"`
+		TargetEmail string `json:"target_email"`
 	}
 
 	err = json.NewDecoder(r.Body).Decode(&updateForm)
@@ -129,12 +129,12 @@ func (h *FormHandler) HandleUpdateForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if updateForm.Name != nil {
-		existingForm.Name = *updateForm.Name
+	if updateForm.Name != "" {
+		existingForm.Name = updateForm.Name
 	}
 
-	if updateForm.TargetEmail != nil {
-		existingForm.TargetEmail = *updateForm.TargetEmail
+	if updateForm.TargetEmail != "" {
+		existingForm.TargetEmail = updateForm.TargetEmail
 	}
 
 	err = h.formStore.UpdateForm(existingForm)

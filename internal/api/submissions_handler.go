@@ -53,21 +53,21 @@ func (h *SubmissionHandler) Recaptcha(token string, siteKey string, r *http.Requ
 	)
 	if err != nil {
 		h.logger.Printf("error creating recaptcha assessment: %v", err)
-		return false, fmt.Errorf("creating recaptcha assessment: %v", err)
+		return true, fmt.Errorf("creating recaptcha assessment: %v", err)
 	}
 
 	if assessment.TokenProperties == nil || !assessment.TokenProperties.Valid {
 		h.logger.Printf("error invalid recaptcha token: %v", err)
-		return false, fmt.Errorf("invalid captcha token", err)
+		return true, fmt.Errorf("invalid captcha token", err)
 	}
 
 	score := assessment.RiskAnalysis.Score
 
 	if score < 0.5 {
 		h.logger.Printf("recaptcha score below threshold: %v", score)
-		return false, fmt.Errorf("invalid recaptcha score: %v", score)
+		return true, fmt.Errorf("invalid recaptcha score: %v", score)
 	}
-	return true, nil
+	return false, nil
 }
 
 func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *http.Request) {
@@ -108,14 +108,10 @@ func (h *SubmissionHandler) HandleCreateSubmission(w http.ResponseWriter, r *htt
 	var error_reason string
 
 	if isRecaptchaEnabled {
-		isNotSpam, err := h.Recaptcha(submissionRequest.Token, siteKey, r)
-		if !isNotSpam {
+		isSpam, err := h.Recaptcha(submissionRequest.Token, siteKey, r)
+		if isSpam {
 			submission_status = "spam"
 			error_reason = fmt.Sprintf("Spam: %v", err)
-		}
-		if err != nil {
-			submission_status = "error"
-			error_reason = fmt.Sprintf("Recaptcha Assessment Error")
 		}
 	}
 
