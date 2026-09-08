@@ -455,6 +455,18 @@ SMTP settings are configured by users through the SiSH Form Mailer UI.
 
 ---
 
+### Troubleshooting
+
+#### Forgot password
+
+If you are not the `super admin` of the deployment, you much contact them to reset your password for you. They would simply edit your profile, assign a new password and then you can sign in as normal. Change your password once logged in for security.
+
+If you are the `super admin` and you forgot your password, you can simply make a `GET` request to `/api/auth/forgot-password?admin_pass={ADMIN_PASS}` where `ADMIN_PASS` is the password you set when you deployed SiSH Form Mailer, in your `env`.
+
+If the password you supplied matches, then you will be able to check the server logs for the new password generated for your account. This can now be used to login.
+
+---
+
 # Production Deployment
 
 A typical production setup looks like:
