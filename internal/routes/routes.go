@@ -85,6 +85,9 @@ func Routes(app *app.Application) *chi.Mux {
 	// Login
 	r.Post("/api/auth/login", app.TokenHandler.HandleCreateToken)
 
+	// Health
+	r.Get("/api/health", app.HealthCheck)
+
 	util.Front(r)
 
 	return r
